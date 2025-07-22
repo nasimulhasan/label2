@@ -9,6 +9,13 @@
   <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/jspdf"></script>
   <script src="MangoDream-normal.js"></script>
+  <style>
+    .pdf-preview {
+      border: 1px solid #ccc;
+      padding: 10px;
+      margin-top: 20px;
+    }
+  </style>
 </head>
 <body class="bg-light">
   <div class="container py-5">
@@ -31,10 +38,21 @@
         <div class="card-body">
           <h5 class="card-title">Upload Excel</h5>
           <input class="form-control mb-3" type="file" id="excelFile" accept=".xlsx, .xls">
-          <select class="form-select mb-3" id="invoiceSelect">
-            <option value="">Select Invoice</option>
-          </select>
-          <button class="btn btn-success" id="generateExcelPDF">Generate PDF</button>
+          <div class="row">
+            <div class="col-md-6">
+              <label for="startInvoice" class="form-label">Start Invoice</label>
+              <select class="form-select" id="startInvoice">
+                <option value="">Select Start</option>
+              </select>
+            </div>
+            <div class="col-md-6">
+              <label for="endInvoice" class="form-label">End Invoice</label>
+              <select class="form-select" id="endInvoice">
+                <option value="">Select End</option>
+              </select>
+            </div>
+          </div>
+          <button class="btn btn-success mt-3" id="generateExcelPDF">Generate PDF</button>
         </div>
       </div>
     </div>
@@ -69,6 +87,8 @@
   </div>
 
   <script>
+    let excelData = [];
+
     $(document).ready(function () {
       $('input[name="mode"]').on('change', function () {
         const mode = $('input[name="mode"]:checked').val();
@@ -76,7 +96,41 @@
         $('#manualSection').toggle(mode === 'manual');
       });
 
-      $('#addItem').click(function () {
+      $('#excelFile').on('change', function (e) {
+        const file = e.target.files[0];
+        if (!file) return;
+
+        const reader = new FileReader();
+        reader.onload = function (e) {
+          const data = new Uint8Array(e.target.result);
+          const workbook = XLSX.read(data, { type: 'array' });
+          const sheetName = workbook.SheetNames[0];
+          const sheet = workbook.Sheets[sheetName];
+          excelData = XLSX.utils.sheet_to_json(sheet, { defval: "" });
+
+          const invoiceSet = new Set();
+          excelData.forEach(row => {
+            if (row["Invoice"]) invoiceSet.add(String(row["Invoice"]).trim());
+          });
+
+          const invoices = Array.from(invoiceSet).sort();
+          const startSelect = $('#startInvoice');
+          const endSelect = $('#endInvoice');
+
+          startSelect.empty().append('<option value="">Select Start</option>');
+          endSelect.empty().append('<option value="">Select End</option>');
+
+          invoices.forEach(inv => {
+            startSelect.append(`<option value="${inv}">${inv}</option>`);
+            endSelect.append(`<option value="${inv}">${inv}</option>`);
+          });
+
+          console.log("✅ Invoice dropdowns populated:", invoices);
+        };
+        reader.readAsArrayBuffer(file);
+      });
+
+      $(document).on('click', '#addItem', function () {
         $('#itemList').append(`
           <div class="input-group mb-2">
             <input class="form-control item-name" placeholder="Item name">
