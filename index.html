@@ -84,9 +84,33 @@
       </div>
 
       <!-- Footer Text -->
-      <footer class="text-center mb-3">
-        <small>Buy me a coffee</small>
-      </footer>
+      <!-- Buy Me a Coffee Accordion -->
+<div class="accordion mb-4" id="coffeeAccordion">
+  <div class="accordion-item">
+    <h2 class="accordion-header" id="coffeeHeading">
+      <button class="accordion-button collapsed" 
+              type="button" 
+              data-bs-toggle="collapse" 
+              data-bs-target="#coffeeCollapse" 
+              aria-expanded="false" 
+              aria-controls="coffeeCollapse">
+        Buy me a coffee
+      </button>
+    </h2>
+    <div id="coffeeCollapse" 
+         class="accordion-collapse collapse" 
+         aria-labelledby="coffeeHeading" 
+         data-bs-parent="#coffeeAccordion">
+      <div class="accordion-body text-center">
+        <p>If you enjoy this tool, consider buying me a coffee ☕️</p>
+        <img src="https://via.placeholder.com/150" 
+             alt="Buy me a coffee" 
+             class="img-fluid rounded" />
+      </div>
+    </div>
+  </div>
+</div>
+
     </div>
   </div>
 
