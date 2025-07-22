@@ -25,69 +25,73 @@
   </style>
 </head>
 <body>
-  <div class="container d-flex justify-content-center">
-    <div class="w-100" style="max-width: 600px;">
-      <div class="card shadow-sm">
-        <div class="card-body p-4">
-          <h1 class="card-title text-center mb-4">Shipping Label Generator</h1>
+  <div class="container py-4">
+    <div class="row justify-content-center">
+      <div class="col-sm-10 col-md-8 col-lg-6">
 
-          <!-- Instructions Accordion -->
-          <div class="accordion mb-3" id="instructionsAccordion">
-            <div class="accordion-item">
-              <h2 class="accordion-header" id="headingInstructions">
-                <button class="accordion-button collapsed" type="button"
-                        data-bs-toggle="collapse"
-                        data-bs-target="#collapseInstructions"
-                        aria-expanded="false"
-                        aria-controls="collapseInstructions">
-                  Instructions
-                </button>
-              </h2>
-              <div id="collapseInstructions" class="accordion-collapse collapse"
-                   aria-labelledby="headingInstructions"
-                   data-bs-parent="#instructionsAccordion">
-                <div class="accordion-body">
-                  Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nulla
-                  facilisi. Phasellus in semper purus. Integer euismod, purus sit
-                  amet vehicula hendrerit, nibh lectus luctus urna, sit amet
-                  sollicitudin leo dui nec nulla.
+        <div class="card shadow-sm mb-4">
+          <div class="card-body">
+            <h1 class="card-title text-center mb-4">Shipping Label Generator</h1>
+
+            <!-- Instructions Accordion -->
+            <div class="accordion mb-4" id="instructionsAccordion">
+              <div class="accordion-item">
+                <h2 class="accordion-header" id="instructionsHeading">
+                  <button class="accordion-button collapsed" type="button"
+                          data-bs-toggle="collapse"
+                          data-bs-target="#instructionsCollapse"
+                          aria-expanded="false"
+                          aria-controls="instructionsCollapse">
+                    Instructions
+                  </button>
+                </h2>
+                <div id="instructionsCollapse" class="accordion-collapse collapse"
+                     aria-labelledby="instructionsHeading"
+                     data-bs-parent="#instructionsAccordion">
+                  <div class="accordion-body">
+                    Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nulla facilisi.
+                    Phasellus in semper purus. Integer euismod, purus sit amet vehicula hendrerit,
+                    nibh lectus luctus urna, sit amet sollicitudin leo dui nec nulla.
+                  </div>
                 </div>
               </div>
             </div>
-          </div>
 
-          <form id="labelForm">
-            <div class="mb-1">
-              <label for="headerInput" class="form-label">Header Image</label>
-              <input type="file" class="form-control" id="headerInput" accept="image/*">
-            </div>
-            <div class="mb-1">
-              <label for="footerInput" class="form-label">Footer Image</label>
-              <input type="file" class="form-control" id="footerInput" accept="image/*">
-            </div>
-            <div class="mb-1">
-              <label for="excelInput" class="form-label">Excel File</label>
-              <input type="file" class="form-control" id="excelInput" accept=".xls,.xlsx">
-            </div>
-            <div id="invoiceSelection" class="mb-1 hidden">
-              <label for="invoiceSelect" class="form-label">Select Invoices (optional)</label>
-              <select id="invoiceSelect" class="form-select" multiple size="8"></select>
-              <div class="form-text">
-                Hold Ctrl (Windows) / Cmd (Mac) to select multiple. Leave unselected to generate all.
+            <form id="labelForm">
+              <div class="mb-2">
+                <label for="headerInput" class="form-label">Header Image</label>
+                <input type="file" class="form-control" id="headerInput" accept="image/*">
               </div>
-            </div>
-            <button type="button" id="generateBtn" class="btn btn-primary w-100">
-              Generate Labels
-            </button>
-          </form>
-          <div id="alertPlaceholder" class="mt-3"></div>
-        </div>
-      </div>
+              <div class="mb-2">
+                <label for="footerInput" class="form-label">Footer Image</label>
+                <input type="file" class="form-control" id="footerInput" accept="image/*">
+              </div>
+              <div class="mb-2">
+                <label for="excelInput" class="form-label">Excel File</label>
+                <input type="file" class="form-control" id="excelInput" accept=".xls,.xlsx">
+              </div>
+              <div id="invoiceSelection" class="mb-2 hidden">
+                <label for="invoiceSelect" class="form-label">Select Invoices (optional)</label>
+                <select id="invoiceSelect" class="form-select" multiple size="8"></select>
+                <div class="form-text">
+                  Hold Ctrl (Windows) / Cmd (Mac) to select multiple. Leave unselected to generate all.
+                </div>
+              </div>
+              <button type="button" id="generateBtn" class="btn btn-primary w-100">
+                Generate Labels
+              </button>
+            </form>
 
-      <!-- Footer Text -->
-      <footer class="text-center mt-4 mb-3">
-        <small>Buy me a coffee</small>
-      </footer>
+            <div id="alertPlaceholder" class="mt-3"></div>
+          </div>
+        </div>
+
+        <!-- Footer Text -->
+        <footer class="text-center">
+          <small>Buy me a coffee</small>
+        </footer>
+
+      </div>
     </div>
   </div>
 
@@ -122,14 +126,18 @@
         const keys = ["Invoice","First Name","Last Name","Phone","Address","Order Total Amount"];
         const last = {};
         rows = rows.map(r => {
-          keys.forEach(k => { if (r[k] !== '') last[k]=r[k]; else r[k]=last[k]||''; });
+          keys.forEach(k => {
+            if (r[k] !== '') last[k]=r[k];
+            else r[k]=last[k]||'';
+          });
           return r;
         });
         parsedRows = rows;
 
         // Populate invoices
         invoiceList = [...new Set(rows.map(r => String(r['Invoice']).trim()))].sort();
-        const sel = document.getElementById('invoiceSelect'); sel.innerHTML = '';
+        const sel = document.getElementById('invoiceSelect');
+        sel.innerHTML = '';
         invoiceList.forEach(inv => {
           const opt = document.createElement('option');
           opt.value = inv;
@@ -157,7 +165,9 @@
 
       // Determine target invoices
       const selectedOpts = Array.from(document.getElementById('invoiceSelect').selectedOptions);
-      const targets = selectedOpts.length ? selectedOpts.map(o => o.value) : invoiceList;
+      const targets = selectedOpts.length
+        ? selectedOpts.map(o => o.value)
+        : invoiceList;
 
       const headerDataUrl = await readFileAsDataURL(headerFile);
       const footerDataUrl = await readFileAsDataURL(footerFile);
@@ -166,10 +176,11 @@
       for (const inv of targets) {
         const group = parsedRows.filter(r => String(r['Invoice']).trim() === inv);
         if (!group.length) continue;
+
         const doc = new jsPDF({ unit:'mm', format:[152.4,101.6] });
         doc.setFontSize(10);
 
-        // Images
+        // Header & footer images
         doc.addImage(headerDataUrl, 'PNG', 0, 0, 101.6, 30);
         doc.addImage(footerDataUrl, 'PNG', 0, 106.4, 101.6, 49);
 
