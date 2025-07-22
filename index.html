@@ -184,16 +184,15 @@
         const name = titleCase(group[0]['First Name'] + ' ' + group[0]['Last Name']);
         doc.text(`Name: ${name}`, 5, y); y += 7;
 
-        // Normalize phone to 0xxxxxxxxxx
+        // Normalize phone so it always becomes 0xxxxxxxxxx
         let raw = String(group[0]['Phone']);
         let digits = raw.replace(/\D/g, '');
         if (digits.startsWith('880')) {
           digits = digits.slice(3);
-        }
-        if (digits.length === 11 && digits.startsWith('0')) {
+        } else if (digits.startsWith('0')) {
           digits = digits.slice(1);
         }
-        if (digits.length !== 10) {
+        if (digits.length > 10) {
           digits = digits.slice(-10);
         }
         const phone = '0' + digits;
