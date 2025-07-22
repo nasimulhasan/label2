@@ -45,9 +45,9 @@
             <label for="excelInput" class="form-label">Excel File</label>
             <input class="form-control" type="file" id="excelInput" accept=".xls,.xlsx">
           </div>
-          <div id="invoiceSelection" class="col-md-4 d-none">
+          <div id="invoiceSelection" class="col-12 d-none">
             <label for="invoiceSelect" class="form-label">Select Invoices (optional)</label>
-            <select id="invoiceSelect" class="form-select" multiple></select>
+            <select id="invoiceSelect" class="form-select" multiple size="8"></select>
             <div class="form-text">Hold Ctrl (Windows) / Cmd (Mac) to select multiple. Leave unselected to generate all.</div>
           </div>
           <div class="col-12">
@@ -82,76 +82,61 @@
         const sheet = wb.Sheets[wb.SheetNames[0]];
         let rows = XLSX.utils.sheet_to_json(sheet, { defval: '' });
 
-        // Forward-fill essential columns
-        const keys = ["Invoice","First Name","Last Name","Phone","Address","Order Total Amount"];
-        const last = {};
-        rows = rows.map(r => {
-          keys.forEach(k => { r[k] !== '' ? last[k] = r[k] : r[k] = last[k] || ''; });
-          return r;
-        });
+        // Forward-fill
+        const keys=["Invoice","First Name","Last Name","Phone","Address","Order Total Amount"], last={};
+        rows = rows.map(r => { keys.forEach(k=>{ r[k]!="" ? last[k]=r[k] : r[k]=last[k]||'' }); return r; });
         parsedRows = rows;
 
-        // Populate dropdown
-        invoiceList = [...new Set(rows.map(r => String(r['Invoice']).trim()))].sort();
-        const sel = document.getElementById('invoiceSelect'); sel.innerHTML = '';
-        invoiceList.forEach(inv => {
-          const opt = document.createElement('option'); opt.value = inv; opt.textContent = inv;
-          sel.appendChild(opt);
-        });
+        // Populate invoices
+        invoiceList = [...new Set(rows.map(r=>String(r['Invoice']).trim()))].sort();
+        const sel = document.getElementById('invoiceSelect'); sel.innerHTML='';
+        invoiceList.forEach(inv=>{ let opt=document.createElement('option'); opt.value=inv; opt.textContent=inv; sel.appendChild(opt); });
         document.getElementById('invoiceSelection').classList.remove('d-none');
-      } catch (err) {
-        showAlert('Error parsing Excel: ' + err.message);
-      }
+      } catch (err) { showAlert('Error parsing Excel: '+err.message); }
     });
 
-    document.getElementById('generateBtn').addEventListener('click', async () => {
-      alertPlaceholder.innerHTML = '';
-      const headerFile = document.getElementById('headerInput').files[0];
-      const footerFile = document.getElementById('footerInput').files[0];
-      if (!headerFile || !footerFile) { showAlert('Select header & footer images.'); return; }
-      if (!parsedRows.length) { showAlert('Upload & parse an Excel file first.'); return; }
+    document.getElementById('generateBtn').addEventListener('click', async ()=>{
+      alertPlaceholder.innerHTML='';
+      const headerFile=document.getElementById('headerInput').files[0];
+      const footerFile=document.getElementById('footerInput').files[0];
+      if(!headerFile||!footerFile){ showAlert('Select header & footer images.'); return; }
+      if(!parsedRows.length){ showAlert('Upload & parse an Excel file first.'); return; }
 
-      const selectedOpts = Array.from(document.getElementById('invoiceSelect').selectedOptions);
-      const targets = selectedOpts.length ? selectedOpts.map(o => o.value) : invoiceList;
+      const selected = Array.from(document.getElementById('invoiceSelect').selectedOptions).map(o=>o.value);
+      const targets = selected.length ? selected : invoiceList;
+      const headerDataUrl=await readFileAsDataURL(headerFile);
+      const footerDataUrl=await readFileAsDataURL(footerFile);
+      const pdfs=[];
 
-      const headerDataUrl = await readFileAsDataURL(headerFile);
-      const footerDataUrl = await readFileAsDataURL(footerFile);
-      const pdfs = [];
-
-      for (const inv of targets) {
-        const group = parsedRows.filter(r => String(r['Invoice']).trim() === inv);
-        if (!group.length) continue;
-        const doc = new jsPDF({ unit: 'mm', format: [152.4, 101.6] }); doc.setFontSize(10);
-        doc.addImage(headerDataUrl, 'PNG', 0, 0, 101.6, 30);
-        doc.addImage(footerDataUrl, 'PNG', 0, 106.4, 101.6, 49);
-        let y = 41;
-        doc.text(`Invoice #: ${inv}`, 5, y); y += 7;
-        const name = titleCase(group[0]['First Name'] + ' ' + group[0]['Last Name']);
-        doc.text(`Name: ${name}`, 5, y); y += 7;
-        let phone = String(group[0]['Phone']).split('.')[0]; if (!phone.startsWith('0')) phone = '0' + phone;
-        doc.text(`Phone: ${phone}`, 5, y); y += 7;
-        doc.text('Address:', 5, y); y += 7;
-        const addrLines = doc.splitTextToSize(titleCase(group[0]['Address']), 66);
-        doc.text(addrLines, 5, y); y += addrLines.length * 7;
-        const notes = group.map(r => r['NOTE'] || '').join(' ').toLowerCase();
-        const total = notes.includes('paid') ? '0' : String(Math.round(group[0]['Order Total Amount']));
-        doc.text(`Total: Tk ${total}`, 5, y); y += 7;
-        doc.text('Items:', 5, y); y += 7;
-        group.forEach(r => {
-          const item = r['Items'] ? titleCase(r['Items']) : '';
-          const qty = r['Quantity'] ? ` (${r['Quantity']})` : '';
-          if (item) { doc.text(`- ${item}${qty}`, 5, y); y += 7; }
-        });
-        pdfs.push({ name: `${inv}.pdf`, blob: doc.output('blob') });
+      for(const inv of targets) {
+        const group = parsedRows.filter(r=>String(r['Invoice']).trim()===inv);
+        if(!group.length) continue;
+        const doc=new jsPDF({ unit:'mm', format:[152.4,101.6] }); doc.setFontSize(10);
+        doc.addImage(headerDataUrl,'PNG',0,0,101.6,30);
+        doc.addImage(footerDataUrl,'PNG',0,106.4,101.6,49);
+        let y=41;
+        doc.text(`Invoice #: ${inv}`,5,y); y+=7;
+        const name=titleCase(group[0]['First Name']+' '+group[0]['Last Name']);
+        doc.text(`Name: ${name}`,5,y); y+=7;
+        let phone=String(group[0]['Phone']).split('.')[0]; if(!phone.startsWith('0')) phone='0'+phone;
+        doc.text(`Phone: ${phone}`,5,y); y+=7;
+        doc.text('Address:',5,y); y+=7;
+        const addr=doc.splitTextToSize(titleCase(group[0]['Address']),66);
+        doc.text(addr,5,y); y+=addr.length*7;
+        const notes=group.map(r=>r['NOTE']||'').join(' ').toLowerCase();
+        const total=notes.includes('paid')?'0':String(Math.round(group[0]['Order Total Amount']));
+        doc.text(`Total: Tk ${total}`,5,y); y+=7;
+        doc.text('Items:',5,y); y+=7;
+        group.forEach(r=>{ const item=r['Items']?titleCase(r['Items']):''; const qty=r['Quantity']?` (${r['Quantity']})`:''; if(item){doc.text(`- ${item}${qty}`,5,y); y+=7;} });
+        pdfs.push({name:`${inv}.pdf`,blob:doc.output('blob')});
       }
-
-      const zip = new JSZip(); pdfs.forEach(f => zip.file(f.name, f.blob));
-      const blob = await zip.generateAsync({ type: 'blob' }); saveAs(blob, 'shipping_labels.zip');
+      const zip=new JSZip(); pdfs.forEach(f=>zip.file(f.name,f.blob));
+      const blob=await zip.generateAsync({type:'blob'}); saveAs(blob,'shipping_labels.zip');
     });
 
-    function readFileAsDataURL(file) { return new Promise(res => { const r = new FileReader(); r.onload = () => res(r.result); r.readAsDataURL(file); }); }
-    function readFileAsArrayBuffer(file) { return new Promise(res => { const r = new FileReader(); r.onload = () => res(r.result); r.readAsArrayBuffer(file); }); }
-    function titleCase(str) { return String(str).toLowerCase().split(' ').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' '); }
+    function readFileAsDataURL(file){ return new Promise(res=>{ const r=new FileReader(); r.onload=()=>res(r.result); r.readAsDataURL(file); }); }
+    function readFileAsArrayBuffer(file){ return new Promise(res=>{ const r=new FileReader(); r.onload=()=>res(r.result); r.readAsArrayBuffer(file); }); }
+    function titleCase(str){ return String(str).toLowerCase().split(' ').map(w=>w.charAt(0).toUpperCase()+w.slice(1)).join(' '); }
   </script>
 </body>
 </html>
