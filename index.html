@@ -39,19 +39,11 @@
     <div id="excelSection">
       <div class="card">
         <div class="card-body">
-          <h5 class="card-title">Upload Excel and Generate Labels</h5>
+          <h5 class="card-title">Upload Excel and Generate Label</h5>
           <input class="form-control mb-3" type="file" id="excelInput" accept=".xlsx,.xls">
-          <div class="row">
-            <div class="col">
-              <label>Start Invoice</label>
-              <select id="startInvoice" class="form-select"></select>
-            </div>
-            <div class="col">
-              <label>End Invoice</label>
-              <select id="endInvoice" class="form-select"></select>
-            </div>
-          </div>
-          <button class="btn btn-success mt-3" id="generateExcelPDFs">Generate PDFs</button>
+          <label>Select Invoice</label>
+          <select id="selectedInvoice" class="form-select mb-3"></select>
+          <button class="btn btn-success" id="generateSelectedPDF">Generate PDF</button>
         </div>
       </div>
     </div>
@@ -89,6 +81,7 @@
     const { jsPDF } = window.jspdf;
     let headerImgData = null;
     let footerImgData = null;
+    let excelData = [];
 
     // Mode toggle
     $('input[name="mode"]').on('change', function () {
@@ -151,39 +144,33 @@
         const data = new Uint8Array(e.target.result);
         const workbook = XLSX.read(data, { type: 'array' });
         const sheet = workbook.Sheets[workbook.SheetNames[0]];
-        const json = XLSX.utils.sheet_to_json(sheet, { defval: '' });
+        excelData = XLSX.utils.sheet_to_json(sheet, { defval: '' });
 
-        const invoices = [...new Set(json.map(row => row.Invoice))].filter(Boolean);
-        $('#startInvoice, #endInvoice').empty();
-        invoices.forEach(i => $('#startInvoice, #endInvoice').append(`<option value="${i}">${i}</option>`));
-
-        $('#generateExcelPDFs').off('click').on('click', () => {
-          const start = $('#startInvoice').val();
-          const end = $('#endInvoice').val();
-          const startIndex = invoices.indexOf(start);
-          const endIndex = invoices.indexOf(end);
-          const slice = invoices.slice(startIndex, endIndex + 1);
-
-          slice.forEach(invoice => {
-            const group = json.filter(row => row.Invoice === invoice);
-            if (!group.length) return;
-            const base = group[0];
-            const items = group.map(row => ({ name: row.Items, qty: row.Quantity })).filter(i => i.name);
-
-            const doc = new jsPDF({ unit: 'mm', format: [101.6, 152.4] });
-            generateLabelPDF(doc, {
-              invoice: base.Invoice,
-              name: `${base["First Name"]} ${base["Last Name"]}`,
-              phone: base.Phone,
-              address: base.Address,
-              amount: base["Order Total Amount"],
-              note: base.Note,
-              items: items
-            });
-          });
-        });
+        const invoices = [...new Set(excelData.map(row => row.Invoice))].filter(Boolean);
+        $('#selectedInvoice').empty();
+        invoices.forEach(i => $('#selectedInvoice').append(`<option value="${i}">${i}</option>`));
       };
       reader.readAsArrayBuffer(file);
+    });
+
+    $('#generateSelectedPDF').on('click', function () {
+      const selected = $('#selectedInvoice').val();
+      const group = excelData.filter(row => row.Invoice === selected);
+      if (!group.length) return;
+
+      const base = group[0];
+      const items = group.map(row => ({ name: row.Items, qty: row.Quantity })).filter(i => i.name);
+
+      const doc = new jsPDF({ unit: 'mm', format: [101.6, 152.4] });
+      generateLabelPDF(doc, {
+        invoice: base.Invoice,
+        name: `${base["First Name"]} ${base["Last Name"]}`,
+        phone: base.Phone,
+        address: base.Address,
+        amount: base["Order Total Amount"],
+        note: base.Note,
+        items: items
+      });
     });
 
     // Label PDF builder
