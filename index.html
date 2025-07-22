@@ -8,6 +8,8 @@
   <script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
   <!-- jsPDF for PDF generation -->
   <script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
+  <!-- Custom MangoDream font registration (update URL to your raw file) -->
+  <script src="https://raw.githubusercontent.com/yourusername/yourrepo/main/MangoDream-normal.js"></script>
   <!-- JSZip for zipping files -->
   <script src="https://cdn.jsdelivr.net/npm/jszip@3.10.0/dist/jszip.min.js"></script>
   <!-- FileSaver for saving blobs -->
@@ -45,7 +47,6 @@
   let parsedRows = [];
   let invoiceList = [];
 
-  // Read Excel and populate invoice multi-select
   document.getElementById('excelInput').addEventListener('change', async event => {
     const file = event.target.files[0];
     if (!file) return;
@@ -66,35 +67,24 @@
     });
     parsedRows = rows;
 
-    // Unique sorted invoice numbers
+    // Populate invoice multi-select
     invoiceList = [...new Set(rows.map(r => String(r['Invoice']).trim()))].sort();
-    const sel = document.getElementById('invoiceSelect');
-    sel.innerHTML = '';
+    const sel = document.getElementById('invoiceSelect'); sel.innerHTML = '';
     invoiceList.forEach(inv => {
-      const opt = document.createElement('option');
-      opt.value = inv;
-      opt.textContent = inv;
+      const opt = document.createElement('option'); opt.value = inv; opt.textContent = inv;
       sel.appendChild(opt);
     });
     document.getElementById('invoiceSelection').style.display = 'block';
   });
 
-  // Generate PDFs based on selection
   document.getElementById('generateBtn').addEventListener('click', async () => {
     const headerFile = document.getElementById('headerInput').files[0];
     const footerFile = document.getElementById('footerInput').files[0];
-    if (!headerFile || !footerFile) {
-      alert('Please select header and footer images.');
-      return;
-    }
-    if (!parsedRows.length) {
-      alert('Please upload and parse an Excel file first.');
-      return;
-    }
+    if (!headerFile || !footerFile) { alert('Please select header and footer images.'); return; }
+    if (!parsedRows.length) { alert('Please upload and parse an Excel file first.'); return; }
 
-    // Determine invoices to process
-    const selectEl = document.getElementById('invoiceSelect');
-    const selected = Array.from(selectEl.selectedOptions).map(o => o.value);
+    // Determine which invoices to generate
+    const selected = Array.from(document.getElementById('invoiceSelect').selectedOptions).map(o => o.value);
     const targets = selected.length ? selected : invoiceList;
 
     const headerDataUrl = await readFileAsDataURL(headerFile);
@@ -105,71 +95,48 @@
       const group = parsedRows.filter(r => String(r['Invoice']).trim() === inv);
       if (!group.length) continue;
 
+      // Init PDF and register custom font
       const doc = new jsPDF({ unit: 'mm', format: [152.4, 101.6] });
-      // Header & footer images
+      doc.addFileToVFS('MangoDream-normal.ttf', window.MangoDreamNormal);
+      doc.addFont('MangoDream-normal.ttf', 'MangoDream', 'normal');
+      doc.setFont('MangoDream', 'normal');
+      doc.setFontSize(10);
+
+      // Add header & footer
       doc.addImage(headerDataUrl, 'PNG', 0, 0, 101.6, 30);
       doc.addImage(footerDataUrl, 'PNG', 0, 106.4, 101.6, 49);
-      doc.setFontSize(10);
-      let y = 41;
 
-      // Invoice #
+      let y = 41;
       doc.text(`Invoice #: ${inv}`, 5, y); y += 7;
-      // Customer name
       const fullName = titleCase(group[0]['First Name'] + ' ' + group[0]['Last Name']);
       doc.text(`Name: ${fullName}`, 5, y); y += 7;
-      // Phone
-      let phone = String(group[0]['Phone']).split('.')[0];
-      if (!phone.startsWith('0')) phone = '0' + phone;
+      let phone = String(group[0]['Phone']).split('.')[0]; if (!phone.startsWith('0')) phone = '0'+phone;
       doc.text(`Phone: ${phone}`, 5, y); y += 7;
-      // Address
       doc.text('Address:', 5, y); y += 7;
       const addrLines = doc.splitTextToSize(titleCase(group[0]['Address']), 66);
-      doc.text(addrLines, 5, y);
-      y += addrLines.length * 7;
-
-      // Total Amount
-      const notes = group.map(r => r['NOTE'] || '').join(' ').toLowerCase();
-      const isPaid = notes.includes('paid');
-      const total = isPaid ? '0' : String(Math.round(group[0]['Order Total Amount']));
+      doc.text(addrLines, 5, y); y += addrLines.length*7;
+      const notes = group.map(r=>r['NOTE']||'').join(' ').toLowerCase();
+      const total = notes.includes('paid') ? '0' : String(Math.round(group[0]['Order Total Amount']));
       doc.text(`Total: Tk ${total}`, 5, y); y += 7;
-
-      // Items list
       doc.text('Items:', 5, y); y += 7;
-      group.forEach(r => {
-        const item = r['Items'] ? titleCase(r['Items']) : '';
-        const qty = r['Quantity'] ? ` (${r['Quantity']})` : '';
-        if (item) {
-          doc.text(`- ${item}${qty}`, 5, y);
-          y += 7;
-        }
+      group.forEach(r=>{
+        const item = r['Items']?titleCase(r['Items']):'';
+        const qty = r['Quantity']?` (${r['Quantity']})`:'';
+        if(item){doc.text(`- ${item}${qty}`,5,y);y+=7;}
       });
 
       pdfs.push({ name: `${inv}.pdf`, blob: doc.output('blob') });
     }
 
-    // Zip and download
-    const zip = new JSZip();
-    pdfs.forEach(f => zip.file(f.name, f.blob));
-    const zipBlob = await zip.generateAsync({ type: 'blob' });
-    saveAs(zipBlob, 'shipping_labels.zip');
+    // Zip and save
+    const zip = new JSZip(); pdfs.forEach(f=>zip.file(f.name, f.blob));
+    const blob = await zip.generateAsync({ type: 'blob' }); saveAs(blob, 'shipping_labels.zip');
   });
 
-  // Utility functions
-  function readFileAsDataURL(file) {
-    return new Promise(res => {
-      const reader = new FileReader(); reader.onload = () => res(reader.result);
-      reader.readAsDataURL(file);
-    });
-  }
-  function readFileAsArrayBuffer(file) {
-    return new Promise(res => {
-      const reader = new FileReader(); reader.onload = () => res(reader.result);
-      reader.readAsArrayBuffer(file);
-    });
-  }
-  function titleCase(str) {
-    return String(str).toLowerCase().split(' ').map(s => s.charAt(0).toUpperCase() + s.slice(1)).join(' ');
-  }
+  // Helpers
+  function readFileAsDataURL(f){return new Promise(r=>{const rd=new FileReader();rd.onload=()=>r(rd.result);rd.readAsDataURL(f);});}
+  function readFileAsArrayBuffer(f){return new Promise(r=>{const rd=new FileReader();rd.onload=()=>r(rd.result);rd.readAsArrayBuffer(f);});}
+  function titleCase(s){return String(s).toLowerCase().split(' ').map(w=>w.charAt(0).toUpperCase()+w.slice(1)).join(' ');}  
   </script>
 </body>
 </html>
