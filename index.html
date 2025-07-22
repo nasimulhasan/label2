@@ -15,7 +15,8 @@
   <style>
     body { font-family: sans-serif; margin: 20px; }
     label { display: block; margin-bottom: 10px; }
-    button { margin-top: 20px; padding: 10px 20px; }
+    select, button, input { margin-top: 5px; }
+    #rangeSelectors { margin-top: 20px; display: none; }
   </style>
 </head>
 <body>
@@ -29,53 +30,78 @@
   <label>
     Excel File: <input type="file" id="excelInput" accept=".xls,.xlsx">
   </label>
+  <div id="rangeSelectors">
+    <label>
+      Start Invoice:
+      <select id="startInvoiceSelect"></select>
+    </label>
+    <label>
+      End Invoice:
+      <select id="endInvoiceSelect"></select>
+    </label>
+  </div>
   <button id="generateBtn">Generate Labels</button>
 
   <script>
   const { jsPDF } = window.jspdf;
+  let parsedRows = [];
+  let invoiceList = [];
 
-  document.getElementById('generateBtn').addEventListener('click', async () => {
-    const headerFile = document.getElementById('headerInput').files[0];
-    const footerFile = document.getElementById('footerInput').files[0];
-    const excelFile = document.getElementById('excelInput').files[0];
-    if (!headerFile || !footerFile || !excelFile) {
-      alert('Please select header, footer, and Excel files.');
-      return;
-    }
-
-    // Read files
-    const headerDataUrl = await readFileAsDataURL(headerFile);
-    const footerDataUrl = await readFileAsDataURL(footerFile);
-    const arrayBuffer = await readFileAsArrayBuffer(excelFile);
-
-    // Parse Excel
-    const workbook = XLSX.read(arrayBuffer, { type: 'array' });
-    const sheet = workbook.Sheets[workbook.SheetNames[0]];
+  document.getElementById('excelInput').addEventListener('change', async event => {
+    const file = event.target.files[0];
+    if (!file) return;
+    const buff = await readFileAsArrayBuffer(file);
+    const wb = XLSX.read(buff, { type: 'array' });
+    const sheet = wb.Sheets[wb.SheetNames[0]];
     let rows = XLSX.utils.sheet_to_json(sheet, { defval: '' });
 
     // Forward-fill essential columns
     const keys = ["Invoice", "First Name", "Last Name", "Phone", "Address", "Order Total Amount"];
-    let lastVals = {};
+    const last = {};
     rows = rows.map(r => {
       keys.forEach(k => {
-        if (r[k] !== '') lastVals[k] = r[k];
-        else r[k] = lastVals[k] || '';
+        if (r[k] !== '') last[k] = r[k];
+        else r[k] = last[k] || '';
       });
       return r;
     });
+    parsedRows = rows;
 
-    // Group by invoice
-    const groups = {};
-    rows.forEach(r => {
-      const inv = String(r['Invoice']).trim();
-      groups[inv] = groups[inv] || [];
-      groups[inv].push(r);
-    });
+    // Populate invoice dropdowns
+    invoiceList = [...new Set(rows.map(r => String(r['Invoice']).trim()))].sort();
+    populateSelect('startInvoiceSelect', invoiceList);
+    populateSelect('endInvoiceSelect', invoiceList);
+    document.getElementById('rangeSelectors').style.display = 'block';
+  });
 
-    // Generate PDFs
-    const pdfFiles = [];
-    for (const inv in groups) {
-      const data = groups[inv];
+  document.getElementById('generateBtn').addEventListener('click', async () => {
+    const headerFile = document.getElementById('headerInput').files[0];
+    const footerFile = document.getElementById('footerInput').files[0];
+    if (!headerFile || !footerFile) {
+      alert('Please select header and footer images.');
+      return;
+    }
+    if (!parsedRows.length) {
+      alert('Please upload and parse an Excel file first.');
+      return;
+    }
+
+    const start = document.getElementById('startInvoiceSelect').value;
+    const end = document.getElementById('endInvoiceSelect').value;
+    const startIdx = invoiceList.indexOf(start);
+    const endIdx = invoiceList.indexOf(end);
+    if (startIdx === -1 || endIdx === -1 || startIdx > endIdx) {
+      alert('Invalid invoice range selection.');
+      return;
+    }
+    const range = invoiceList.slice(startIdx, endIdx + 1);
+    const headerDataUrl = await readFileAsDataURL(headerFile);
+    const footerDataUrl = await readFileAsDataURL(footerFile);
+
+    const pdfs = [];
+    for (const inv of range) {
+      const group = parsedRows.filter(r => String(r['Invoice']).trim() === inv);
+      if (!group.length) continue;
       const doc = new jsPDF({ unit: 'mm', format: [152.4, 101.6] });
       doc.addImage(headerDataUrl, 'PNG', 0, 0, 101.6, 30);
       doc.addImage(footerDataUrl, 'PNG', 0, 106.4, 101.6, 49);
@@ -85,27 +111,27 @@
       // Invoice #
       doc.text(`Invoice #: ${inv}`, 5, y); y += 7;
       // Name
-      const name = titleCase(data[0]['First Name'] + ' ' + data[0]['Last Name']);
+      const name = titleCase(group[0]['First Name'] + ' ' + group[0]['Last Name']);
       doc.text(`Name: ${name}`, 5, y); y += 7;
       // Phone
-      let phone = String(data[0]['Phone']).split('.')[0];
+      let phone = String(group[0]['Phone']).split('.')[0];
       if (!phone.startsWith('0')) phone = '0' + phone;
       doc.text(`Phone: ${phone}`, 5, y); y += 7;
       // Address
       doc.text('Address:', 5, y); y += 7;
-      const addressLines = doc.splitTextToSize(titleCase(data[0]['Address']), 66);
-      doc.text(addressLines, 5, y);
-      y += addressLines.length * 7;
+      const addrLines = doc.splitTextToSize(titleCase(group[0]['Address']), 66);
+      doc.text(addrLines, 5, y);
+      y += addrLines.length * 7;
 
       // Total
-      const notes = data.map(r=>r['NOTE']||'').join(' ').toLowerCase();
+      const notes = group.map(r => r['NOTE'] || '').join(' ').toLowerCase();
       const isPaid = notes.includes('paid');
-      const total = isPaid ? '0' : String(Math.round(data[0]['Order Total Amount']));
+      const total = isPaid ? '0' : String(Math.round(group[0]['Order Total Amount']));
       doc.text(`Total: Tk ${total}`, 5, y); y += 7;
 
       // Items
       doc.text('Items:', 5, y); y += 7;
-      data.forEach(r => {
+      group.forEach(r => {
         const item = r['Items'] ? titleCase(r['Items']) : '';
         const qty = r['Quantity'] ? ` (${r['Quantity']})` : '';
         if (item) {
@@ -114,35 +140,41 @@
         }
       });
 
-      const blob = doc.output('blob');
-      pdfFiles.push({ name: `${inv}.pdf`, blob });
+      pdfs.push({ name: `${inv}.pdf`, blob: doc.output('blob') });
     }
 
-    // Zip all PDFs
+    // Zip
     const zip = new JSZip();
-    pdfFiles.forEach(f => zip.file(f.name, f.blob));
+    pdfs.forEach(f => zip.file(f.name, f.blob));
     const zipBlob = await zip.generateAsync({ type: 'blob' });
     saveAs(zipBlob, 'shipping_labels.zip');
   });
 
+  function populateSelect(id, list) {
+    const sel = document.getElementById(id);
+    sel.innerHTML = '';
+    list.forEach(v => {
+      const opt = document.createElement('option'); opt.value = v; opt.textContent = v;
+      sel.appendChild(opt);
+    });
+  }
+
   function readFileAsDataURL(file) {
     return new Promise(res => {
-      const reader = new FileReader();
-      reader.onload = () => res(reader.result);
+      const reader = new FileReader(); reader.onload = () => res(reader.result);
       reader.readAsDataURL(file);
     });
   }
 
   function readFileAsArrayBuffer(file) {
     return new Promise(res => {
-      const reader = new FileReader();
-      reader.onload = () => res(reader.result);
+      const reader = new FileReader(); reader.onload = () => res(reader.result);
       reader.readAsArrayBuffer(file);
     });
   }
 
   function titleCase(str) {
-    return str.toLowerCase().split(' ').map(s => s.charAt(0).toUpperCase() + s.slice(1)).join(' ');
+    return String(str).toLowerCase().split(' ').map(s => s.charAt(0).toUpperCase() + s.slice(1)).join(' ');
   }
   </script>
 </body>
