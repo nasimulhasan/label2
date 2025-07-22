@@ -15,34 +15,42 @@
   <!-- FileSaver for saving blobs -->
   <script src="https://cdn.jsdelivr.net/npm/file-saver@2.0.5/dist/FileSaver.min.js"></script>
   <style>
-    body { padding-top: 2rem; }
+    body { padding-top: 2rem; background: #f8f9fa; }
     .hidden { display: none; }
   </style>
 </head>
 <body>
   <div class="container">
-    <h1 class="mb-4">Shipping Label Generator</h1>
-    <form id="labelForm">
-      <div class="mb-3">
-        <label for="headerInput" class="form-label">Header Image</label>
-        <input class="form-control" type="file" id="headerInput" accept="image/*">
+    <div class="row justify-content-center">
+      <div class="col-lg-6 col-md-8">
+        <div class="card shadow-sm">
+          <div class="card-body">
+            <h1 class="card-title text-center mb-4">Shipping Label Generator</h1>
+            <form id="labelForm">
+              <div class="mb-3">
+                <label for="headerInput" class="form-label">Header Image</label>
+                <input type="file" class="form-control" id="headerInput" accept="image/*">
+              </div>
+              <div class="mb-3">
+                <label for="footerInput" class="form-label">Footer Image</label>
+                <input type="file" class="form-control" id="footerInput" accept="image/*">
+              </div>
+              <div class="mb-3">
+                <label for="excelInput" class="form-label">Excel File</label>
+                <input type="file" class="form-control" id="excelInput" accept=".xls,.xlsx">
+              </div>
+              <div id="invoiceSelection" class="mb-3 hidden">
+                <label for="invoiceSelect" class="form-label">Select Invoices (optional)</label>
+                <select id="invoiceSelect" class="form-select" multiple size="8"></select>
+                <div class="form-text">Hold Ctrl (Windows) / Cmd (Mac) to select multiple. Leave unselected to generate all.</div>
+              </div>
+              <button type="button" id="generateBtn" class="btn btn-primary w-100">Generate Labels</button>
+            </form>
+            <div id="alertPlaceholder" class="mt-3"></div>
+          </div>
+        </div>
       </div>
-      <div class="mb-3">
-        <label for="footerInput" class="form-label">Footer Image</label>
-        <input class="form-control" type="file" id="footerInput" accept="image/*">
-      </div>
-      <div class="mb-3">
-        <label for="excelInput" class="form-label">Excel File</label>
-        <input class="form-control" type="file" id="excelInput" accept=".xls,.xlsx">
-      </div>
-      <div id="invoiceSelection" class="mb-3 hidden">
-        <label for="invoiceSelect" class="form-label">Select Invoices (optional)</label>
-        <select id="invoiceSelect" class="form-select" multiple size="8"></select>
-        <div class="form-text">Hold Ctrl (Windows) / Cmd (Mac) to select multiple. Leave unselected to generate all.</div>
-      </div>
-      <button type="button" id="generateBtn" class="btn btn-primary">Generate Labels</button>
-    </form>
-    <div id="alertPlaceholder" class="mt-3"></div>
+    </div>
   </div>
 
   <!-- Bootstrap Bundle JS (includes Popper) -->
