@@ -27,3 +27,29 @@ $(document).ready(function () {
     $(this).closest('.input-group').remove();
   });
 });
+$('#excelFile').on('change', function (e) {
+  const file = e.target.files[0];
+  if (!file) return;
+
+  const reader = new FileReader();
+  reader.onload = function (e) {
+    const data = new Uint8Array(e.target.result);
+    const workbook = XLSX.read(data, { type: 'array' });
+    const sheetName = workbook.SheetNames[0];
+    const sheet = workbook.Sheets[sheetName];
+    const json = XLSX.utils.sheet_to_json(sheet, { defval: "" });
+
+    const invoices = [...new Set(json.map(row => row["Invoice"]).filter(Boolean))];
+
+    $('#invoiceSelect').empty();
+    invoices.forEach(inv => {
+      $('#invoiceSelect').append(`<option value="${inv}">${inv}</option>`);
+    });
+
+    // Save the full JSON for future use (like label generation)
+    window.invoiceData = json;
+    console.log("✅ Invoices loaded:", invoices);
+  };
+  reader.readAsArrayBuffer(file);
+});
+
