@@ -16,7 +16,7 @@
     body { font-family: sans-serif; margin: 20px; }
     label { display: block; margin-bottom: 10px; }
     select, button, input { margin-top: 5px; }
-    #rangeSelectors { margin-top: 20px; display: none; }
+    #invoiceSelection { margin-top: 20px; display: none; }
   </style>
 </head>
 <body>
@@ -30,16 +30,14 @@
   <label>
     Excel File: <input type="file" id="excelInput" accept=".xls,.xlsx">
   </label>
-  <div id="rangeSelectors">
+
+  <div id="invoiceSelection">
     <label>
-      Start Invoice:
-      <select id="startInvoiceSelect"></select>
-    </label>
-    <label>
-      End Invoice:
-      <select id="endInvoiceSelect"></select>
+      Select Invoices (Ctrl/Cmd+click for multiple; leave blank to generate all):
+      <select id="invoiceSelect" multiple size="10" style="width: 200px;"></select>
     </label>
   </div>
+
   <button id="generateBtn">Generate Labels</button>
 
   <script>
@@ -47,6 +45,7 @@
   let parsedRows = [];
   let invoiceList = [];
 
+  // Read Excel and populate invoice multi-select
   document.getElementById('excelInput').addEventListener('change', async event => {
     const file = event.target.files[0];
     if (!file) return;
@@ -67,13 +66,20 @@
     });
     parsedRows = rows;
 
-    // Populate invoice dropdowns
+    // Unique sorted invoice numbers
     invoiceList = [...new Set(rows.map(r => String(r['Invoice']).trim()))].sort();
-    populateSelect('startInvoiceSelect', invoiceList);
-    populateSelect('endInvoiceSelect', invoiceList);
-    document.getElementById('rangeSelectors').style.display = 'block';
+    const sel = document.getElementById('invoiceSelect');
+    sel.innerHTML = '';
+    invoiceList.forEach(inv => {
+      const opt = document.createElement('option');
+      opt.value = inv;
+      opt.textContent = inv;
+      sel.appendChild(opt);
+    });
+    document.getElementById('invoiceSelection').style.display = 'block';
   });
 
+  // Generate PDFs based on selection
   document.getElementById('generateBtn').addEventListener('click', async () => {
     const headerFile = document.getElementById('headerInput').files[0];
     const footerFile = document.getElementById('footerInput').files[0];
@@ -86,23 +92,21 @@
       return;
     }
 
-    const start = document.getElementById('startInvoiceSelect').value;
-    const end = document.getElementById('endInvoiceSelect').value;
-    const startIdx = invoiceList.indexOf(start);
-    const endIdx = invoiceList.indexOf(end);
-    if (startIdx === -1 || endIdx === -1 || startIdx > endIdx) {
-      alert('Invalid invoice range selection.');
-      return;
-    }
-    const range = invoiceList.slice(startIdx, endIdx + 1);
+    // Determine invoices to process
+    const selectEl = document.getElementById('invoiceSelect');
+    const selected = Array.from(selectEl.selectedOptions).map(o => o.value);
+    const targets = selected.length ? selected : invoiceList;
+
     const headerDataUrl = await readFileAsDataURL(headerFile);
     const footerDataUrl = await readFileAsDataURL(footerFile);
 
     const pdfs = [];
-    for (const inv of range) {
+    for (const inv of targets) {
       const group = parsedRows.filter(r => String(r['Invoice']).trim() === inv);
       if (!group.length) continue;
+
       const doc = new jsPDF({ unit: 'mm', format: [152.4, 101.6] });
+      // Header & footer images
       doc.addImage(headerDataUrl, 'PNG', 0, 0, 101.6, 30);
       doc.addImage(footerDataUrl, 'PNG', 0, 106.4, 101.6, 49);
       doc.setFontSize(10);
@@ -110,9 +114,9 @@
 
       // Invoice #
       doc.text(`Invoice #: ${inv}`, 5, y); y += 7;
-      // Name
-      const name = titleCase(group[0]['First Name'] + ' ' + group[0]['Last Name']);
-      doc.text(`Name: ${name}`, 5, y); y += 7;
+      // Customer name
+      const fullName = titleCase(group[0]['First Name'] + ' ' + group[0]['Last Name']);
+      doc.text(`Name: ${fullName}`, 5, y); y += 7;
       // Phone
       let phone = String(group[0]['Phone']).split('.')[0];
       if (!phone.startsWith('0')) phone = '0' + phone;
@@ -123,13 +127,13 @@
       doc.text(addrLines, 5, y);
       y += addrLines.length * 7;
 
-      // Total
+      // Total Amount
       const notes = group.map(r => r['NOTE'] || '').join(' ').toLowerCase();
       const isPaid = notes.includes('paid');
       const total = isPaid ? '0' : String(Math.round(group[0]['Order Total Amount']));
       doc.text(`Total: Tk ${total}`, 5, y); y += 7;
 
-      // Items
+      // Items list
       doc.text('Items:', 5, y); y += 7;
       group.forEach(r => {
         const item = r['Items'] ? titleCase(r['Items']) : '';
@@ -143,36 +147,26 @@
       pdfs.push({ name: `${inv}.pdf`, blob: doc.output('blob') });
     }
 
-    // Zip
+    // Zip and download
     const zip = new JSZip();
     pdfs.forEach(f => zip.file(f.name, f.blob));
     const zipBlob = await zip.generateAsync({ type: 'blob' });
     saveAs(zipBlob, 'shipping_labels.zip');
   });
 
-  function populateSelect(id, list) {
-    const sel = document.getElementById(id);
-    sel.innerHTML = '';
-    list.forEach(v => {
-      const opt = document.createElement('option'); opt.value = v; opt.textContent = v;
-      sel.appendChild(opt);
-    });
-  }
-
+  // Utility functions
   function readFileAsDataURL(file) {
     return new Promise(res => {
       const reader = new FileReader(); reader.onload = () => res(reader.result);
       reader.readAsDataURL(file);
     });
   }
-
   function readFileAsArrayBuffer(file) {
     return new Promise(res => {
       const reader = new FileReader(); reader.onload = () => res(reader.result);
       reader.readAsArrayBuffer(file);
     });
   }
-
   function titleCase(str) {
     return String(str).toLowerCase().split(' ').map(s => s.charAt(0).toUpperCase() + s.slice(1)).join(' ');
   }
