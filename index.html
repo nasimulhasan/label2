@@ -27,6 +27,8 @@
 <body>
   <div class="container d-flex justify-content-center">
     <div class="w-100" style="max-width: 600px;">
+
+      <!-- Main Card -->
       <div class="card shadow-sm mb-4">
         <div class="card-body p-4">
           <h1 class="card-title text-center mb-4">Shipping Label Generator</h1>
@@ -43,92 +45,80 @@
                   Instructions
                 </button>
               </h2>
-<!-- Instructions Accordion -->
-<div class="accordion mb-4" id="instructionsAccordion">
-  <div class="accordion-item">
-    <h2 class="accordion-header" id="instructionsHeading">
-      <button class="accordion-button collapsed" type="button"
-              data-bs-toggle="collapse"
-              data-bs-target="#instructionsCollapse"
-              aria-expanded="false"
-              aria-controls="instructionsCollapse">
-        Instructions
-      </button>
-    </h2>
-    <div id="instructionsCollapse" class="accordion-collapse collapse"
-         aria-labelledby="instructionsHeading"
-         data-bs-parent="#instructionsAccordion">
-      <div class="accordion-body">
-        <h5 class="mb-3">ব্যবহার নির্দেশনা</h5>
-        <ol class="ps-3">
-          <li class="mb-2">
-            <strong>PDF সাইজ:</strong>
-            <ul class="ps-3 mb-0">
-              <li>প্রতিটি লেবেল PDF-এর ডিফল্ট আকার: 152.4 mm × 101.6 mm (6″ × 4″)।</li>
-            </ul>
-          </li>
-          <li class="mb-2">
-            <strong>ইমেজ সাইজ:</strong>
-            <ul class="ps-3 mb-0">
-              <li>হেডার: কমপক্ষে 900×300px (JPEG/PNG)</li>
-              <li>ফুটার: কমপক্ষে 900×450px (JPEG/PNG)</li>
-              <li>ছবি স্ট্রেচ বা ক্রপ না করে সম্পূর্ণ প্রস্থ ঢাকা উচিত।</li>
-            </ul>
-          </li>
-          <li class="mb-2">
-            <strong>এক্সেল ফাইল ফরম্যাট:</strong>
-            <ul class="ps-3 mb-0">
-              <li>এক্সটেনশন: <code>.xls</code>, <code>.xlsx</code></li>
-              <li>কলাম হেডার থাকা উচিত: <code>Invoice</code>, <code>First Name</code>, <code>Last Name</code>, <code>Phone</code>, <code>Address</code>, <code>Order Total Amount</code></li>
-              <li>যদি কোনো সেলে মান না থাকে, তাহলে আগের সারি থেকে ফরওয়ার্ড-ফিল হবে।</li>
-            </ul>
-          </li>
-          <li class="mb-2">
-            <strong>ফোন নম্বর ফরম্যাট:</strong>
-            <ul class="ps-3 mb-0">
-              <li>১১ সংখ্যার, সব সময় <code>01xxxxxxxxx</code> ফরম্যাটে দেখাবে।</li>
-              <li><code>+880</code> বা অন্যান্য ক্যারেক্টার স্বয়ংক্রিয়ভাবে সরিয়ে ফেলবে।</li>
-            </ul>
-          </li>
-          <li class="mb-2">
-            <strong>ইনভয়েস সিলেকশন:</strong>
-            <ul class="ps-3 mb-0">
-              <li>একাধিক বাছাই করতে Ctrl (Windows) বা Cmd (Mac) চেপে ধরুন।</li>
-              <li>কিছু না বাছলে সব ইনভয়েস জেনারেট হবে।</li>
-            </ul>
-          </li>
-          <li class="mb-2">
-            <strong>জেনারেট ও ডাউনলোড:</strong>
-            <ul class="ps-3 mb-0">
-              <li>“Generate Labels” এ ক্লিক করলে <code>shipping_labels.zip</code> নামের ZIP ডাউনলোড হবে।</li>
-            </ul>
-          </li>
-          <li class="mb-2">
-            <strong>ব্রাউজার সুপারিশ:</strong>
-            <ul class="ps-3 mb-0">
-              <li>Chrome, Firefox বা Edge-এর সাম্প্রতিক ভার্সন ব্যবহার করুন।</li>
-            </ul>
-          </li>
-          <li class="mb-2">
-            <strong>সমস্যা ও সমাধান:</strong>
-            <ul class="ps-3 mb-0">
-              <li>Excel পার্সে সমস্যা হলে Error মেসেজ দেখে ফরম্যাট ঠিক করুন।</li>
-              <li>ফোন নম্বর অস্বাভাবিক দেখালে Excel-এ শুধু সংখ্যা নিশ্চিত করুন।</li>
-            </ul>
-          </li>
-          <li>
-            <strong>সহযোগিতা:</strong>
-            <ul class="ps-3 mb-0">
-              <li>কোনো প্রশ্ন বা বাগ জানাতে যোগাযোগ করুন—আপডেট দেওয়া হবে।</li>
-            </ul>
-          </li>
-        </ol>
-      </div>
-    </div>
-  </div>
-</div>
+              <div id="instructionsCollapse" class="accordion-collapse collapse"
+                   aria-labelledby="instructionsHeading"
+                   data-bs-parent="#instructionsAccordion">
+                <div class="accordion-body">
+                  <h5 class="mb-3">ব্যবহার নির্দেশনা</h5>
+                  <ol class="ps-3">
+                    <li class="mb-2">
+                      <strong>PDF সাইজ:</strong>
+                      <ul class="ps-3 mb-0">
+                        <li>প্রতিটি লেবেল PDF-এর ডিফল্ট আকার: 152.4 mm × 101.6 mm (6″ × 4″)।</li>
+                      </ul>
+                    </li>
+                    <li class="mb-2">
+                      <strong>ইমেজ সাইজ:</strong>
+                      <ul class="ps-3 mb-0">
+                        <li>হেডার: কমপক্ষে 900×300px (JPEG/PNG)</li>
+                        <li>ফুটার: কমপক্ষে 900×450px (JPEG/PNG)</li>
+                        <li>ছবি স্ট্রেচ বা ক্রপ না করে সম্পূর্ণ প্রস্থ ঢাকা উচিত।</li>
+                      </ul>
+                    </li>
+                    <li class="mb-2">
+                      <strong>এক্সেল ফাইল ফরম্যাট:</strong>
+                      <ul class="ps-3 mb-0">
+                        <li>এক্সটেনশন: <code>.xls</code>, <code>.xlsx</code></li>
+                        <li>কলাম হেডার থাকা উচিত: <code>Invoice</code>, <code>First Name</code>, <code>Last Name</code>, <code>Phone</code>, <code>Address</code>, <code>Order Total Amount</code></li>
+                        <li>যদি কোনো সেলে মান না থাকে, তাহলে আগের সারি থেকে ফরওয়ার্ড-ফিল হবে।</li>
+                      </ul>
+                    </li>
+                    <li class="mb-2">
+                      <strong>ফোন নম্বর ফরম্যাট:</strong>
+                      <ul class="ps-3 mb-0">
+                        <li>১১ সংখ্যার, সব সময় <code>01xxxxxxxxx</code> ফরম্যাটে দেখাবে।</li>
+                        <li><code>+880</code> বা অন্যান্য ক্যারেক্টার স্বয়ংক্রিয়ভাবে সরিয়ে ফেলবে।</li>
+                      </ul>
+                    </li>
+                    <li class="mb-2">
+                      <strong>ইনভয়েস সিলেকশন:</strong>
+                      <ul class="ps-3 mb-0">
+                        <li>একাধিক বাছাই করতে Ctrl (Windows) বা Cmd (Mac) চেপে ধরুন।</li>
+                        <li>কিছু না বাছলে সব ইনভয়েস জেনারেট হবে।</li>
+                      </ul>
+                    </li>
+                    <li class="mb-2">
+                      <strong>জেনারেট ও ডাউনলোড:</strong>
+                      <ul class="ps-3 mb-0">
+                        <li>“Generate Labels” এ ক্লিক করলে <code>shipping_labels.zip</code> নামের ZIP ডাউনলোড হবে।</li>
+                      </ul>
+                    </li>
+                    <li class="mb-2">
+                      <strong>ব্রাউজার সুপারিশ:</strong>
+                      <ul class="ps-3 mb-0">
+                        <li>Chrome, Firefox বা Edge-এর সাম্প্রতিক ভার্সন ব্যবহার করুন।</li>
+                      </ul>
+                    </li>
+                    <li class="mb-2">
+                      <strong>সমস্যা ও সমাধান:</strong>
+                      <ul class="ps-3 mb-0">
+                        <li>Excel পার্সে সমস্যা হলে Error মেসেজ দেখে ফরম্যাট ঠিক করুন।</li>
+                        <li>ফোন নম্বর অস্বাভাবিক দেখালে Excel-এ শুধু সংখ্যা নিশ্চিত করুন।</li>
+                      </ul>
+                    </li>
+                    <li>
+                      <strong>সহযোগিতা:</strong>
+                      <ul class="ps-3 mb-0">
+                        <li>কোনো প্রশ্ন বা বাগ জানাতে যোগাযোগ করুন—আপডেট দেওয়া হবে।</li>
+                      </ul>
+                    </li>
+                  </ol>
+                </div>
+              </div>
+            </div>
+          </div>
 
-
+          <!-- Form -->
           <form id="labelForm">
             <div class="mb-2">
               <label for="headerInput" class="form-label">Header Image</label>
@@ -157,33 +147,32 @@
         </div>
       </div>
 
-      <!-- Footer Text -->
       <!-- Buy Me a Coffee Accordion -->
-<div class="accordion mb-4" id="coffeeAccordion">
-  <div class="accordion-item">
-    <h2 class="accordion-header" id="coffeeHeading">
-      <button class="accordion-button collapsed" 
-              type="button" 
-              data-bs-toggle="collapse" 
-              data-bs-target="#coffeeCollapse" 
-              aria-expanded="false" 
-              aria-controls="coffeeCollapse">
-        Buy me a coffee
-      </button>
-    </h2>
-    <div id="coffeeCollapse" 
-         class="accordion-collapse collapse" 
-         aria-labelledby="coffeeHeading" 
-         data-bs-parent="#coffeeAccordion">
-      <div class="accordion-body text-center">
-        <p>If you enjoy this tool, consider buying me a coffee ☕️</p>
-        <img src="https://via.placeholder.com/150" 
-             alt="Buy me a coffee" 
-             class="img-fluid rounded" />
+      <div class="accordion mb-4" id="coffeeAccordion">
+        <div class="accordion-item">
+          <h2 class="accordion-header" id="coffeeHeading">
+            <button class="accordion-button collapsed" 
+                    type="button" 
+                    data-bs-toggle="collapse" 
+                    data-bs-target="#coffeeCollapse" 
+                    aria-expanded="false" 
+                    aria-controls="coffeeCollapse">
+              Buy me a coffee
+            </button>
+          </h2>
+          <div id="coffeeCollapse" 
+               class="accordion-collapse collapse" 
+               aria-labelledby="coffeeHeading" 
+               data-bs-parent="#coffeeAccordion">
+            <div class="accordion-body text-center">
+              <p>If you enjoy this tool, consider buying me a coffee ☕️</p>
+              <img src="https://via.placeholder.com/150" 
+                   alt="Buy me a coffee" 
+                   class="img-fluid rounded" />
+            </div>
+          </div>
+        </div>
       </div>
-    </div>
-  </div>
-</div>
 
     </div>
   </div>
