@@ -2,141 +2,161 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Shipping Label Generator</title>
+  <!-- Bootstrap CSS -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
   <!-- SheetJS for Excel parsing -->
   <script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
   <!-- jsPDF for PDF generation -->
   <script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
-  <!-- Custom MangoDream font registration (using raw GitHub URL) -->
-  <script src="https://raw.githubusercontent.com/nasimulhasan/label2/main/MangoDream-normal.js"></script>
   <!-- JSZip for zipping files -->
   <script src="https://cdn.jsdelivr.net/npm/jszip@3.10.0/dist/jszip.min.js"></script>
   <!-- FileSaver for saving blobs -->
   <script src="https://cdn.jsdelivr.net/npm/file-saver@2.0.5/dist/FileSaver.min.js"></script>
   <style>
-    body { font-family: sans-serif; margin: 20px; }
-    label { display: block; margin-bottom: 10px; }
-    select, button, input { margin-top: 5px; }
-    #invoiceSelection { margin-top: 20px; display: none; }
+    body { padding-top: 2rem; }
+    .hidden { display: none; }
   </style>
 </head>
 <body>
-  <h1>Shipping Label Generator</h1>
-  <label>
-    Header Image: <input type="file" id="headerInput" accept="image/*">
-  </label>
-  <label>
-    Footer Image: <input type="file" id="footerInput" accept="image/*">
-  </label>
-  <label>
-    Excel File: <input type="file" id="excelInput" accept=".xls,.xlsx">
-  </label>
-
-  <div id="invoiceSelection">
-    <label>
-      Select Invoices (Ctrl/Cmd+click for multiple; leave blank to generate all):
-      <select id="invoiceSelect" multiple size="10" style="width: 200px;"></select>
-    </label>
+  <div class="container">
+    <h1 class="mb-4">Shipping Label Generator</h1>
+    <form id="labelForm">
+      <div class="mb-3">
+        <label for="headerInput" class="form-label">Header Image</label>
+        <input class="form-control" type="file" id="headerInput" accept="image/*">
+      </div>
+      <div class="mb-3">
+        <label for="footerInput" class="form-label">Footer Image</label>
+        <input class="form-control" type="file" id="footerInput" accept="image/*">
+      </div>
+      <div class="mb-3">
+        <label for="excelInput" class="form-label">Excel File</label>
+        <input class="form-control" type="file" id="excelInput" accept=".xls,.xlsx">
+      </div>
+      <div id="invoiceSelection" class="mb-3 hidden">
+        <label for="invoiceSelect" class="form-label">Select Invoices (optional)</label>
+        <select id="invoiceSelect" class="form-select" multiple size="8"></select>
+        <div class="form-text">Hold Ctrl (Windows) / Cmd (Mac) to select multiple. Leave unselected to generate all.</div>
+      </div>
+      <button type="button" id="generateBtn" class="btn btn-primary">Generate Labels</button>
+    </form>
+    <div id="alertPlaceholder" class="mt-3"></div>
   </div>
 
-  <button id="generateBtn">Generate Labels</button>
-
+  <!-- Bootstrap Bundle JS (includes Popper) -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
   <script>
-  const { jsPDF } = window.jspdf;
-  let parsedRows = [];
-  let invoiceList = [];
+    const { jsPDF } = window.jspdf;
+    let parsedRows = [];
+    let invoiceList = [];
 
-  document.getElementById('excelInput').addEventListener('change', async event => {
-    const file = event.target.files[0];
-    if (!file) return;
-    const buff = await readFileAsArrayBuffer(file);
-    const wb = XLSX.read(buff, { type: 'array' });
-    const sheet = wb.Sheets[wb.SheetNames[0]];
-    let rows = XLSX.utils.sheet_to_json(sheet, { defval: '' });
-
-    // Forward-fill essential columns
-    const keys = ["Invoice", "First Name", "Last Name", "Phone", "Address", "Order Total Amount"];
-    const last = {};
-    rows = rows.map(r => {
-      keys.forEach(k => {
-        if (r[k] !== '') last[k] = r[k];
-        else r[k] = last[k] || '';
-      });
-      return r;
-    });
-    parsedRows = rows;
-
-    // Populate invoice multi-select
-    invoiceList = [...new Set(rows.map(r => String(r['Invoice']).trim()))].sort();
-    const sel = document.getElementById('invoiceSelect'); sel.innerHTML = '';
-    invoiceList.forEach(inv => {
-      const opt = document.createElement('option'); opt.value = inv; opt.textContent = inv;
-      sel.appendChild(opt);
-    });
-    document.getElementById('invoiceSelection').style.display = 'block';
-  });
-
-  document.getElementById('generateBtn').addEventListener('click', async () => {
-    const headerFile = document.getElementById('headerInput').files[0];
-    const footerFile = document.getElementById('footerInput').files[0];
-    if (!headerFile || !footerFile) { alert('Please select header and footer images.'); return; }
-    if (!parsedRows.length) { alert('Please upload and parse an Excel file first.'); return; }
-
-    // Determine which invoices to generate
-    const selected = Array.from(document.getElementById('invoiceSelect').selectedOptions).map(o => o.value);
-    const targets = selected.length ? selected : invoiceList;
-
-    const headerDataUrl = await readFileAsDataURL(headerFile);
-    const footerDataUrl = await readFileAsDataURL(footerFile);
-
-    const pdfs = [];
-    for (const inv of targets) {
-      const group = parsedRows.filter(r => String(r['Invoice']).trim() === inv);
-      if (!group.length) continue;
-
-      // Init PDF and register custom font
-      const doc = new jsPDF({ unit: 'mm', format: [152.4, 101.6] });
-      doc.addFileToVFS('MangoDream-normal.ttf', window.MangoDreamNormal);
-      doc.addFont('MangoDream-normal.ttf', 'MangoDream', 'normal');
-      doc.setFont('MangoDream', 'normal');
-      doc.setFontSize(10);
-
-      // Add header & footer
-      doc.addImage(headerDataUrl, 'PNG', 0, 0, 101.6, 30);
-      doc.addImage(footerDataUrl, 'PNG', 0, 106.4, 101.6, 49);
-
-      let y = 41;
-      doc.text(`Invoice #: ${inv}`, 5, y); y += 7;
-      const fullName = titleCase(group[0]['First Name'] + ' ' + group[0]['Last Name']);
-      doc.text(`Name: ${fullName}`, 5, y); y += 7;
-      let phone = String(group[0]['Phone']).split('.')[0]; if (!phone.startsWith('0')) phone = '0'+phone;
-      doc.text(`Phone: ${phone}`, 5, y); y += 7;
-      doc.text('Address:', 5, y); y += 7;
-      const addrLines = doc.splitTextToSize(titleCase(group[0]['Address']), 66);
-      doc.text(addrLines, 5, y); y += addrLines.length*7;
-      const notes = group.map(r=>r['NOTE']||'').join(' ').toLowerCase();
-      const total = notes.includes('paid') ? '0' : String(Math.round(group[0]['Order Total Amount']));
-      doc.text(`Total: Tk ${total}`, 5, y); y += 7;
-      doc.text('Items:', 5, y); y += 7;
-      group.forEach(r=>{
-        const item = r['Items']?titleCase(r['Items']):'';
-        const qty = r['Quantity']?` (${r['Quantity']})`:'';
-        if(item){doc.text(`- ${item}${qty}`,5,y);y+=7;}
-      });
-
-      pdfs.push({ name: `${inv}.pdf`, blob: doc.output('blob') });
+    const alertPlaceholder = document.getElementById('alertPlaceholder');
+    function showAlert(message, type='danger') {
+      const wrapper = document.createElement('div');
+      wrapper.innerHTML = `
+        <div class="alert alert-${type} alert-dismissible" role="alert">
+          ${message}
+          <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>`;
+      alertPlaceholder.append(wrapper);
     }
 
-    // Zip and save
-    const zip = new JSZip(); pdfs.forEach(f=>zip.file(f.name, f.blob));
-    const blob = await zip.generateAsync({ type: 'blob' }); saveAs(blob, 'shipping_labels.zip');
-  });
+    document.getElementById('excelInput').addEventListener('change', async (e) => {
+      const file = e.target.files[0];
+      if (!file) return;
+      try {
+        const buff = await readFileAsArrayBuffer(file);
+        const wb = XLSX.read(buff, { type: 'array' });
+        const sheet = wb.Sheets[wb.SheetNames[0]];
+        let rows = XLSX.utils.sheet_to_json(sheet, { defval: '' });
 
-  // Helpers
-  function readFileAsDataURL(f){return new Promise(r=>{const rd=new FileReader();rd.onload=()=>r(rd.result);rd.readAsDataURL(f);});}
-  function readFileAsArrayBuffer(f){return new Promise(r=>{const rd=new FileReader();rd.onload=()=>r(rd.result);rd.readAsArrayBuffer(f);});}
-  function titleCase(s){return String(s).toLowerCase().split(' ').map(w=>w.charAt(0).toUpperCase()+w.slice(1)).join(' ');}  
+        // Forward-fill
+        const keys = ["Invoice","First Name","Last Name","Phone","Address","Order Total Amount"];
+        const last = {};
+        rows = rows.map(r => {
+          keys.forEach(k => { if (r[k] !== '') last[k]=r[k]; else r[k]=last[k]||''; });
+          return r;
+        });
+        parsedRows = rows;
+
+        // Populate invoices
+        invoiceList = [...new Set(rows.map(r => String(r['Invoice']).trim()))].sort();
+        const sel = document.getElementById('invoiceSelect'); sel.innerHTML='';
+        invoiceList.forEach(inv => {
+          const opt = document.createElement('option'); opt.value=inv; opt.textContent=inv;
+          sel.appendChild(opt);
+        });
+        document.getElementById('invoiceSelection').classList.remove('hidden');
+      } catch (err) {
+        showAlert('Error parsing Excel file: ' + err.message);
+      }
+    });
+
+    document.getElementById('generateBtn').addEventListener('click', async () => {
+      alertPlaceholder.innerHTML='';
+      const headerFile = document.getElementById('headerInput').files[0];
+      const footerFile = document.getElementById('footerInput').files[0];
+      if (!headerFile || !footerFile) {
+        showAlert('Please select both header and footer images.');
+        return;
+      }
+      if (!parsedRows.length) {
+        showAlert('Please upload and parse an Excel file first.');
+        return;
+      }
+
+      // Determine target invoices
+      const selectedOpts = Array.from(document.getElementById('invoiceSelect').selectedOptions);
+      const targets = selectedOpts.length ? selectedOpts.map(o=>o.value) : invoiceList;
+
+      const headerDataUrl = await readFileAsDataURL(headerFile);
+      const footerDataUrl = await readFileAsDataURL(footerFile);
+      const pdfs = [];
+
+      for (const inv of targets) {
+        const group = parsedRows.filter(r=>String(r['Invoice']).trim()===inv);
+        if (!group.length) continue;
+        const doc = new jsPDF({ unit:'mm', format:[152.4,101.6] });
+        doc.setFontSize(10);
+
+        // Images
+        doc.addImage(headerDataUrl,'PNG',0,0,101.6,30);
+        doc.addImage(footerDataUrl,'PNG',0,106.4,101.6,49);
+
+        let y=41;
+        doc.text(`Invoice #: ${inv}`,5,y); y+=7;
+        const name = titleCase(group[0]['First Name']+' '+group[0]['Last Name']);
+        doc.text(`Name: ${name}`,5,y); y+=7;
+        let phone=String(group[0]['Phone']).split('.')[0]; if(!phone.startsWith('0')) phone='0'+phone;
+        doc.text(`Phone: ${phone}`,5,y); y+=7;
+        doc.text('Address:',5,y); y+=7;
+        const addrLines = doc.splitTextToSize(titleCase(group[0]['Address']),66);
+        doc.text(addrLines,5,y); y+=addrLines.length*7;
+        const notes = group.map(r=>r['NOTE']||'').join(' ').toLowerCase();
+        const total = notes.includes('paid')?'0':String(Math.round(group[0]['Order Total Amount']));
+        doc.text(`Total: Tk ${total}`,5,y); y+=7;
+        doc.text('Items:',5,y); y+=7;
+        group.forEach(r=>{
+          const item=r['Items']?titleCase(r['Items']):'';
+          const qty=r['Quantity']?` (${r['Quantity']})`:'';
+          if(item){ doc.text(`- ${item}${qty}`,5,y); y+=7; }
+        });
+
+        pdfs.push({name:`${inv}.pdf`,blob:doc.output('blob')});
+      }
+
+      // Zip and download
+      const zip=new JSZip(); pdfs.forEach(f=>zip.file(f.name,f.blob));
+      const zipBlob=await zip.generateAsync({type:'blob'});
+      saveAs(zipBlob,'shipping_labels.zip');
+    });
+
+    // Helpers
+    function readFileAsDataURL(file){return new Promise(res=>{const r=new FileReader();r.onload=()=>res(r.result);r.readAsDataURL(file);});}
+    function readFileAsArrayBuffer(file){return new Promise(res=>{const r=new FileReader();r.onload=()=>res(r.result);r.readAsArrayBuffer(file);});}
+    function titleCase(str){return String(str).toLowerCase().split(' ').map(w=>w.charAt(0).toUpperCase()+w.slice(1)).join(' ');}
   </script>
 </body>
 </html>
