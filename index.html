@@ -67,8 +67,6 @@
             <div class="card shadow-sm mb-4">
               <div class="card-body p-4">
                 <h2 class="h5 mb-3">Excel Label Generator</h2>
-
-                <!-- Paper Size -->
                 <div class="mb-3 row">
                   <label class="col-sm-4 col-form-label">Paper Size</label>
                   <div class="col-sm-8">
@@ -82,7 +80,7 @@
                   </div>
                 </div>
                 <div id="customSizeFields" class="mb-3 row d-none">
-                  <div class="col-sm-4"><input type="number" id="paperWidth"  class="form-control" placeholder="Width"></div>
+                  <div class="col-sm-4"><input type="number" id="paperWidth" class="form-control" placeholder="Width"></div>
                   <div class="col-sm-4"><input type="number" id="paperHeight" class="form-control" placeholder="Height"></div>
                   <div class="col-sm-4">
                     <select id="paperUnit" class="form-select">
@@ -92,7 +90,6 @@
                     </select>
                   </div>
                 </div>
-
                 <form id="labelForm">
                   <div class="mb-2">
                     <label class="form-label">Upload Font (optional)</label>
@@ -138,7 +135,6 @@
                   <label class="form-label">Footer Image</label>
                   <input type="file" id="manFooterInput" class="form-control" accept="image/*">
                 </div>
-
                 <div class="mb-3 row">
                   <label class="col-sm-4 col-form-label">Paper Size</label>
                   <div class="col-sm-8">
@@ -152,7 +148,7 @@
                   </div>
                 </div>
                 <div id="manCustomSizeFields" class="mb-3 row d-none">
-                  <div class="col-sm-4"><input type="number" id="manPaperWidth"  class="form-control" placeholder="Width"></div>
+                  <div class="col-sm-4"><input type="number" id="manPaperWidth" class="form-control" placeholder="Width"></div>
                   <div class="col-sm-4"><input type="number" id="manPaperHeight" class="form-control" placeholder="Height"></div>
                   <div class="col-sm-4">
                     <select id="manPaperUnit" class="form-select">
@@ -162,12 +158,11 @@
                     </select>
                   </div>
                 </div>
-
                 <form id="manualForm">
-                  <div class="mb-2"><input type="text" id="manInvoice"   class="form-control" placeholder="Invoice #"></div>
+                  <div class="mb-2"><input type="text" id="manInvoice" class="form-control" placeholder="Invoice #"></div>
                   <div class="mb-2"><input type="text" id="manFirstName" class="form-control" placeholder="First Name"></div>
-                  <div class="mb-2"><input type="text" id="manLastName"  class="form-control" placeholder="Last Name"></div>
-                  <div class="mb-2"><input type="tel"  id="manPhone"     class="form-control" placeholder="Phone"></div>
+                  <div class="mb-2"><input type="text" id="manLastName" class="form-control" placeholder="Last Name"></div>
+                  <div class="mb-2"><input type="tel"  id="manPhone" class="form-control" placeholder="Phone"></div>
                   <div class="mb-2"><textarea id="manAddress" class="form-control" rows="2" placeholder="Address"></textarea></div>
                   <div class="mb-2"><input type="number" id="manTotal" class="form-control" placeholder="Total Amount"></div>
                   <div class="mb-2"><textarea id="manItems" class="form-control" rows="3" placeholder="Items (one per line)"></textarea></div>
@@ -183,86 +178,252 @@
     </div>
   </div>
 
-  <!-- Bootstrap Bundle JS -->
-  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+  <!-- Unlock handler first -->
   <script>
-    const { jsPDF } = window.jspdf;
-    let parsedRows = [], invoiceList = [], customFontName='', customFontData='';
-
-    const readURL = file => new Promise(r => {
-      const fr = new FileReader();
-      fr.onload = () => r(fr.result);
-      fr.readAsDataURL(file);
-    });
-    const readBuffer = file => new Promise(r => {
-      const fr = new FileReader();
-      fr.onload = () => r(fr.result);
-      fr.readAsArrayBuffer(file);
-    });
-    const titleCase = s =>
-      s.toLowerCase().split(' ')
-       .map(w=>w.charAt(0).toUpperCase()+w.slice(1))
-       .join(' ');
-
-    // Unlock handler
-    async function checkUnlock(code){
-      const r = await fetch('https://raw.githubusercontent.com/nasimulhasan/testlabel/main/keys.json');
-      const { validCodes } = await r.json();
+    async function checkUnlock(code) {
+      const resp = await fetch('https://raw.githubusercontent.com/nasimulhasan/testlabel/main/keys.json');
+      if (!resp.ok) throw new Error();
+      const { validCodes } = await resp.json();
       return validCodes.includes(code);
     }
     document.getElementById('unlockBtn').onclick = async () => {
       const code = document.getElementById('unlockInput').value.trim();
       const alert = document.getElementById('unlockAlert');
       alert.innerHTML = '';
-      if (await checkUnlock(code)) {
-        alert.innerHTML = '<div class="alert alert-success">Unlocked!</div>';
-        document.getElementById('unlockPage').classList.add('hidden');
-        document.getElementById('generatorPage').classList.remove('hidden');
-      } else {
-        alert.innerHTML = '<div class="alert alert-warning">Invalid code</div>';
+      try {
+        if (await checkUnlock(code)) {
+          alert.innerHTML = '<div class="alert alert-success">Unlocked!</div>';
+          document.getElementById('unlockPage').classList.add('hidden');
+          document.getElementById('generatorPage').classList.remove('hidden');
+        } else {
+          alert.innerHTML = '<div class="alert alert-warning">Invalid code</div>';
+        }
+      } catch {
+        alert.innerHTML = '<div class="alert alert-danger">Error verifying code</div>';
       }
     };
+  </script>
 
-    // Paper‐size toggles
-    document.getElementById('presetSize').addEventListener('change', e=>
-      document.getElementById('customSizeFields')
-        .classList.toggle('d-none', e.target.value!=='custom')
-    );
-    document.getElementById('manPresetSize').addEventListener('change', e=>
-      document.getElementById('manCustomSizeFields')
-        .classList.toggle('d-none', e.target.value!=='custom')
-    );
+  <!-- Main generator logic -->
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      const { jsPDF } = window.jspdf;
+      let parsedRows = [], invoiceList = [], customFontName = '', customFontData = '';
 
-    // Excel parsing
-    document.getElementById('excelInput').addEventListener('change', async e => {
-      const f = e.target.files[0];
-      if (!f) return;
-      const buff = await readBuffer(f);
-      const wb = XLSX.read(buff, {type:'array'});
-      let last = {};
-      parsedRows = XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]], {defval:''})
-        .map(r => {
-          ['Invoice','First Name','Last Name','Phone','Address','Order Total Amount']
-            .forEach(k => r[k] = r[k]|| last[k] || '');
-          last = {...r};
-          return r;
-        });
-      invoiceList = [...new Set(parsedRows.map(r=>r.Invoice.trim()))].sort();
-      const sel = document.getElementById('invoiceSelect');
-      sel.innerHTML = '';
-      invoiceList.forEach(inv => sel.append(new Option(inv, inv)));
-      document.getElementById('invoiceSelection').classList.remove('hidden');
+      const readURL = file => new Promise(r => {
+        const fr = new FileReader();
+        fr.onload = () => r(fr.result);
+        fr.readAsDataURL(file);
+      });
+      const readBuffer = file => new Promise(r => {
+        const fr = new FileReader();
+        fr.onload = () => r(fr.result);
+        fr.readAsArrayBuffer(file);
+      });
+      const titleCase = s =>
+        s.toLowerCase().split(' ')
+         .map(w => w.charAt(0).toUpperCase() + w.slice(1))
+         .join(' ');
+
+      // Paper‐size toggles
+      document.getElementById('presetSize').addEventListener('change', e =>
+        document.getElementById('customSizeFields').classList.toggle('d-none', e.target.value !== 'custom')
+      );
+      document.getElementById('manPresetSize').addEventListener('change', e =>
+        document.getElementById('manCustomSizeFields').classList.toggle('d-none', e.target.value !== 'custom')
+      );
+
+      // Excel parsing
+      document.getElementById('excelInput').addEventListener('change', async e => {
+        try {
+          const f = e.target.files[0];
+          if (!f) return;
+          const buff = await readBuffer(f);
+          const wb   = XLSX.read(buff, { type:'array' });
+          let last   = {};
+          parsedRows = XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]], { defval:'' })
+            .map(r => {
+              ['Invoice','First Name','Last Name','Phone','Address','Order Total Amount']
+                .forEach(k => r[k] = r[k] || last[k] || '');
+              last = { ...r };
+              return r;
+            });
+          invoiceList = [...new Set(parsedRows.map(r => r.Invoice.trim()))].sort();
+          const sel = document.getElementById('invoiceSelect');
+          sel.innerHTML = '';
+          invoiceList.forEach(inv => sel.append(new Option(inv, inv)));
+          document.getElementById('invoiceSelection').classList.remove('hidden');
+        } catch (err) {
+          console.error(err);
+          alert('Error parsing Excel');
+        }
+      });
+
+      // Excel generate
+      document.getElementById('fontInput').addEventListener('change', async e => {
+        const f = e.target.files[0]; if (!f) return;
+        const url = await readURL(f);
+        customFontName = f.name;
+        customFontData = url.split(',')[1];
+      });
+      document.getElementById('generateBtn').onclick = async () => {
+        try {
+          const hf = document.getElementById('headerInput').files[0];
+          const ff = document.getElementById('footerInput').files[0];
+          if (!hf || !ff) return alert('Select header and footer');
+          if (!parsedRows.length) return alert('Upload and parse Excel first');
+
+          const header = await readURL(hf);
+          const footer = await readURL(ff);
+          let [w,h,unit] = document.getElementById('presetSize').value.split(',');
+          if (w === 'custom') {
+            w = +document.getElementById('paperWidth').value;
+            h = +document.getElementById('paperHeight').value;
+            unit = document.getElementById('paperUnit').value;
+            if (unit==='in'){w*=25.4;h*=25.4;unit='mm';}
+            if (unit==='pt'){w*=0.352778;h*=0.352778;unit='mm';}
+          } else { w=+w; h=+h; }
+          const zip = new JSZip();
+          const opts = Array.from(document.getElementById('invoiceSelect').selectedOptions).map(o=>o.value);
+          const targets = opts.length ? opts : invoiceList;
+
+          for (const inv of targets) {
+            const group = parsedRows.filter(r=>r.Invoice.trim()===inv);
+            const doc   = new jsPDF({ unit, format:[w,h] });
+            if (customFontName && customFontData) {
+              doc.addFileToVFS(customFontName, customFontData);
+              doc.addFont(customFontName, 'Custom', 'normal');
+              doc.setFont('Custom','normal');
+            }
+            doc.setFontSize(10);
+
+            const hp = doc.getImageProperties(header);
+            const hh = w*(hp.height/hp.width);
+            doc.addImage(header,'PNG',0,0,w,hh);
+
+            const fp = doc.getImageProperties(footer);
+            const fh = w*(fp.height/fp.width);
+            doc.addImage(footer,'PNG',0,h-fh,w,fh);
+
+            let y=hh+11, left=10;
+            doc.text(`Invoice #: ${inv}`, left, y); y+=7;
+
+            const rec  = group[0];
+            const name = titleCase(`${rec['First Name']} ${rec['Last Name']}`);
+            doc.text(`Name: ${name}`, left, y); y+=7;
+
+            let num = rec.Phone.replace(/\D/g,'');
+            if (num.startsWith('880')) num=num.slice(3);
+            else if (num.startsWith('0')) num=num.slice(1);
+            if (num.length>10) num=num.slice(-10);
+            doc.text(`Phone: 0${num}`, left, y); y+=7;
+
+            const addrLines = doc.splitTextToSize(`Address: ${titleCase(rec.Address)}`, w-left*2);
+            doc.text(addrLines, left, y); y+=addrLines.length*7;
+
+            const paidNotes = group.map(r=>r.NOTE||'').join(' ').toLowerCase();
+            const total = paidNotes.includes('paid') ? '0' : `${Math.round(rec['Order Total Amount'])}`;
+            doc.text(`Total: Tk ${total}`, left, y); y+=7;
+
+            doc.text('Items:', left, y); y+=7;
+            group.forEach(r=>{
+              if (r.Items) {
+                doc.text(`- ${titleCase(r.Items)}`, left+10, y);
+                y+=7;
+              }
+            });
+
+            zip.file(`${inv}.pdf`, doc.output('blob'));
+          }
+
+          const blob = await zip.generateAsync({type:'blob'});
+          saveAs(blob,'shipping_labels.zip');
+        } catch (err) {
+          console.error(err);
+          alert('Error generating labels');
+        }
+      };
+
+      // Manual generate
+      document.getElementById('manFontInput').addEventListener('change', async e => {
+        const f = e.target.files[0]; if (!f) return;
+        const url = await readURL(f);
+        customFontName = f.name;
+        customFontData = url.split(',')[1];
+      });
+      document.getElementById('generateManualBtn').onclick = async () => {
+        try {
+          const inv = document.getElementById('manInvoice').value.trim();
+          if (!inv) return alert('Enter invoice');
+          const rec = {
+            'Invoice': inv,
+            'First Name': document.getElementById('manFirstName').value.trim(),
+            'Last Name': document.getElementById('manLastName').value.trim(),
+            'Phone': document.getElementById('manPhone').value.trim(),
+            'Address': document.getElementById('manAddress').value.trim(),
+            'Order Total Amount': parseFloat(document.getElementById('manTotal').value)||0
+          };
+          const items = document.getElementById('manItems').value.trim().split('\n').filter(x=>x);
+
+          const hf = document.getElementById('manHeaderInput').files[0];
+          const ff = document.getElementById('manFooterInput').files[0];
+          if (!hf||!ff) return alert('Upload header & footer');
+          const header = await readURL(hf);
+          const footer = await readURL(ff);
+
+          let [w,h,unit] = document.getElementById('manPresetSize').value.split(',');
+          if (w==='custom') {
+            w = +document.getElementById('manPaperWidth').value;
+            h = +document.getElementById('manPaperHeight').value;
+            unit = document.getElementById('manPaperUnit').value;
+            if (unit==='in'){w*=25.4;h*=25.4;unit='mm';}
+            if (unit==='pt'){w*=0.352778;h*=0.352778;unit='mm';}
+          } else { w=+w; h=+h; }
+
+          const doc = new jsPDF({ unit, format:[w,h] });
+          doc.setFontSize(10);
+          if (customFontName && customFontData) {
+            doc.addFileToVFS(customFontName, customFontData);
+            doc.addFont(customFontName, 'Custom', 'normal');
+            doc.setFont('Custom','normal');
+          }
+
+          const hp = doc.getImageProperties(header);
+          const hh = w*(hp.height/hp.width);
+          doc.addImage(header,'PNG',0,0,w,hh);
+
+          const fp = doc.getImageProperties(footer);
+          const fh = w*(fp.height/fp.width);
+          doc.addImage(footer,'PNG',0,h-fh,w,fh);
+
+          let y=hh+11, left=10;
+          doc.text(`Invoice #: ${inv}`, left, y); y+=7;
+          const nm = titleCase(`${rec['First Name']} ${rec['Last Name']}`);
+          doc.text(`Name: ${nm}`, left, y); y+=7;
+
+          let num = rec.Phone.replace(/\D/g,'');
+          if (num.startsWith('880')) num=num.slice(3);
+          else if (num.startsWith('0')) num=num.slice(1);
+          if (num.length>10) num=num.slice(-10);
+          doc.text(`Phone: 0${num}`, left, y); y+=7;
+
+          const addrLines = doc.splitTextToSize(`Address: ${titleCase(rec.Address)}`, w-left*2);
+          doc.text(addrLines, left, y); y+=addrLines.length*7;
+
+          doc.text(`Total: Tk ${Math.round(rec['Order Total Amount'])}`, left, y); y+=7;
+          doc.text('Items:', left, y); y+=7;
+          items.forEach(it => {
+            doc.text(`- ${titleCase(it)}`, left+10, y);
+            y+=7;
+          });
+
+          doc.save(`label_${inv}.pdf`);
+        } catch (err) {
+          console.error(err);
+          alert('Error generating manual label');
+        }
+      };
     });
-
-    // Excel generate
-    document.getElementById('fontInput').addEventListener('change', async e => {
-      const f = e.target.files[0]; if (!f) return;
-      const url = await readURL(f);
-      customFontName = f.name;
-      customFontData = url.split(',')[1];
-    });
-    document.getElementById('generateBtn').onclick = async () => {
-      const headerF = document.getElementById('headerInput').files[0];
-      const footerF = document.getElementById('footerInput').files[0];
-      if (!headerF||!footerF) {
-        return alert('
+  </script>
+</body>
+</html>
