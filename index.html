@@ -285,9 +285,10 @@
         const phone = '0' + digits;
         doc.text(`Phone: ${phone}`, leftMargin, y); y += 7;
 
-        doc.text('Address:', leftMargin, y); y += 7;
-        const addrLines = doc.splitTextToSize(titleCase(group[0]['Address']), 66);
-        doc.text(addrLines, leftMargin, y); y += addrLines.length * 7;
+        const fullAddress = `Address: ${titleCase(group[0]['Address'])}`;
+        const addrLines = doc.splitTextToSize(fullAddress, 66);
+        doc.text(addrLines, leftMargin, y);
+        y += addrLines.length * 7;
 
         const notes = group.map(r => r['NOTE'] || '').join(' ').toLowerCase();
         const total = notes.includes('paid') ? '0' : String(Math.round(group[0]['Order Total Amount']));
