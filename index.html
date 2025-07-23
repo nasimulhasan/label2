@@ -107,108 +107,133 @@
   <!-- Bootstrap JS Bundle -->
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 
-  <script>
+<script>
 document.addEventListener('DOMContentLoaded', () => {
   const { jsPDF } = window.jspdf;
 
-  //
-  // 1) UNLOCK HANDLER
-  //
+  // Unlock
   const unlockBtn   = document.getElementById('unlockBtn');
   const unlockInput = document.getElementById('unlockInput');
   const unlockAlert = document.getElementById('unlockAlert');
   const unlockPage  = document.getElementById('unlockPage');
   const genPage     = document.getElementById('generatorPage');
-
   unlockBtn.addEventListener('click', async () => {
-    const code = unlockInput.value.trim();
     unlockAlert.innerHTML = '';
     try {
-      const resp = await fetch(
-        'https://raw.githubusercontent.com/nasimulhasan/testlabel/main/keys.json'
-      );
-      if (!resp.ok) throw new Error('Network error');
+      const resp = await fetch('https://raw.githubusercontent.com/nasimulhasan/testlabel/main/keys.json');
       const { validCodes } = await resp.json();
-      if (validCodes.includes(code)) {
+      if (validCodes.includes(unlockInput.value.trim())) {
         unlockAlert.innerHTML = '<div class="alert alert-success">Unlocked!</div>';
         unlockPage.classList.add('hidden');
         genPage.classList.remove('hidden');
       } else {
         unlockAlert.innerHTML = '<div class="alert alert-warning">Invalid code</div>';
       }
-    } catch (err) {
-      console.error(err);
+    } catch {
       unlockAlert.innerHTML = '<div class="alert alert-danger">Error verifying code</div>';
     }
   });
 
-  //
-  // 2) CUSTOM‑SIZE TOGGLE
-  //
+  // Custom-size toggle
   document.getElementById('presetSize').addEventListener('change', e => {
-    document
-      .getElementById('customSizeFields')
+    document.getElementById('customSizeFields')
       .classList.toggle('d-none', e.target.value !== 'custom');
   });
 
-  //
-  // 3) INVOICE POPULATOR
-  //
-  const excelIn       = document.getElementById('excelInput');
-  const invoiceSel    = document.getElementById('invoiceSelect');
-  const invoiceWrap   = document.getElementById('invoiceSelection');
+  // State
+  let parsedRows = [];
+  let headerDataUrl = null;
+  let footerDataUrl = null;
 
+  // Preload header/footer
+  document.getElementById('headerInput').addEventListener('change', e => {
+    const f = e.target.files[0];
+    if (!f) return headerDataUrl = null;
+    const r = new FileReader();
+    r.onload = () => headerDataUrl = r.result;
+    r.readAsDataURL(f);
+  });
+  document.getElementById('footerInput').addEventListener('change', e => {
+    const f = e.target.files[0];
+    if (!f) return footerDataUrl = null;
+    const r = new FileReader();
+    r.onload = () => footerDataUrl = r.result;
+    r.readAsDataURL(f);
+  });
+
+  // Invoice populator
+  const excelIn     = document.getElementById('excelInput');
+  const invoiceSel  = document.getElementById('invoiceSelect');
+  const invoiceWrap = document.getElementById('invoiceSelection');
   excelIn.addEventListener('change', async e => {
     const file = e.target.files[0];
     if (!file) return;
-    try {
-      const data = await file.arrayBuffer();
-      const wb   = XLSX.read(data, { type: 'array' });
-      const rows = XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]], { defval: '' });
+    const data = await file.arrayBuffer();
+    const wb   = XLSX.read(data, { type: 'array' });
+    const rows = XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]], { defval: '' });
+    parsedRows = rows;   // store for later
 
-      invoiceSel.innerHTML = '';
-      rows.forEach(r => {
-        const inv = r['Invoice'] ?? r[Object.keys(r)[0]];
-        if (inv) {
-          const opt = document.createElement('option');
-          opt.value = inv;
-          opt.textContent = inv;
-          invoiceSel.append(opt);
-        }
-      });
-      invoiceWrap.classList.remove('hidden');
-    } catch (err) {
-      console.error(err);
-      alert('Failed to parse Excel file');
-    }
+    invoiceSel.innerHTML = '';
+    rows.forEach(r => {
+      const inv = r['Invoice'] ?? r[Object.keys(r)[0]];
+      if (inv) {
+        const opt = document.createElement('option');
+        opt.value = inv;
+        opt.textContent = inv;
+        invoiceSel.append(opt);
+      }
+    });
+    invoiceWrap.classList.remove('hidden');
   });
 
-  //
-  // 4) GENERATE PDF
-  //
+  // Generate PDF
   document.getElementById('generateBtn').addEventListener('click', () => {
     const selected = Array.from(invoiceSel.selectedOptions).map(o => o.value);
     if (!selected.length) return alert('Select at least one invoice.');
 
-    // parse paper size
-    const [w, h, unit] = document
-      .getElementById('presetSize')
-      .value.split(',')
-      .map((v,i) => (i<2 ? Number(v) : v));
-
-    // instantiate PDF
-    const doc = new jsPDF({ unit, format: [w, h] });
+    // paper size
+    const [w,h,unit] = document.getElementById('presetSize').value
+                        .split(',').map((v,i)=> i<2?Number(v):v);
+    const margin = 10;
+    const doc = new jsPDF({ unit, format: [w,h] });
 
     selected.forEach((inv, idx) => {
       if (idx) doc.addPage();
-      doc.setFontSize(16);
-      doc.text(`Invoice: ${inv}`, 10, 20);
+      // header
+      if (headerDataUrl) {
+        doc.addImage(headerDataUrl, 'PNG', margin, margin, w - 2*margin, 20);
+      }
+      // find row
+      const row = parsedRows.find(r => (r['Invoice'] ?? r[Object.keys(r)[0]]) == inv);
+      const yStart = margin + (headerDataUrl ? 30 : 10);
+      doc.setFontSize(12);
+      doc.text(`Invoice: ${inv}`, margin, yStart);
+      doc.text(`Name: ${row['Name']||''}`, margin, yStart+8);
+      doc.text(`Phone: ${row['Phone']||''}`, margin, yStart+16);
+      doc.text(`Address: ${row['Address']||''}`, margin, yStart+24);
+      doc.text(`Total: ${row['Total']||''}`, margin, yStart+32);
+      // items list
+      const items = (row['Items']||'').toString().split(/\r?\n/);
+      doc.text('Items:', margin, yStart+40);
+      items.forEach((it,i) => {
+        doc.text(`- ${it}`, margin+4, yStart+48 + i*6);
+      });
+      // footer
+      if (footerDataUrl) {
+        doc.addImage(footerDataUrl, 'PNG',
+          margin,
+          h - margin - 20,
+          w - 2*margin,
+          20
+        );
+      }
     });
 
     doc.save('labels.pdf');
   });
 });
 </script>
+
 
 </body>
 </html>
