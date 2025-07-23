@@ -285,9 +285,14 @@
         const phone = '0' + digits;
         doc.text(`Phone: ${phone}`, leftMargin, y); y += 7;
 
-        doc.text('Address:', leftMargin, y); y += 7;
-        const addrLines = doc.splitTextToSize(titleCase(group[0]['Address']), 66);
-        doc.text(addrLines, leftMargin, y); y += addrLines.length * 7;
+       // wrap “Address: 123 Foo Street, Bar City …” at 66mm
+        const fullAddr = `Address: ${titleCase(group[0]['Address'])}`;
+        const lines = doc.splitTextToSize(fullAddr, 66);
+// print starting at the original y
+        doc.text(lines, leftMargin, y);
+// advance y by number of lines printed
+        y += lines.length * 7;
+
 
         const notes = group.map(r => r['NOTE'] || '').join(' ').toLowerCase();
         const total = notes.includes('paid') ? '0' : String(Math.round(group[0]['Order Total Amount']));
