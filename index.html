@@ -30,25 +30,7 @@
 
           <!-- Instructions Accordion -->
           <div class="accordion mb-4" id="instructionsAccordion">
-            <div class="accordion-item">
-              <h2 class="accordion-header" id="instructionsHeading">
-                <button class="accordion-button collapsed" type="button"
-                        data-bs-toggle="collapse"
-                        data-bs-target="#instructionsCollapse"
-                        aria-expanded="false"
-                        aria-controls="instructionsCollapse">
-                  Instructions
-                </button>
-              </h2>
-              <div id="instructionsCollapse" class="accordion-collapse collapse"
-                   aria-labelledby="instructionsHeading"
-                   data-bs-parent="#instructionsAccordion">
-                <div class="accordion-body">
-                  <h5 class="mb-3">ব্যবহার নির্দেশনা</h5>
-                  <!-- ... (instructions content omitted for brevity) ... -->
-                </div>
-              </div>
-            </div>
+            <!-- ... your instructions here ... -->
           </div>
 
           <!-- Form -->
@@ -68,7 +50,7 @@
             <div id="invoiceSelection" class="mb-2 hidden">
               <label for="invoiceSelect" class="form-label">Select Invoices (optional)</label>
               <select id="invoiceSelect" class="form-select" multiple size="8"></select>
-              <div class="form-text">Hold Ctrl (Windows) / Cmd (Mac) to select multiple. Leave unselected to generate all.</div>
+              <div class="form-text">Hold Ctrl (Windows) / Cmd (Mac) to select multiple.</div>
             </div>
             <button type="button" id="generateBtn" class="btn btn-primary w-100">Generate Labels</button>
           </form>
@@ -78,24 +60,7 @@
 
       <!-- Buy Me a Coffee Accordion -->
       <div class="accordion mb-4" id="coffeeAccordion">
-        <div class="accordion-item">
-          <h2 class="accordion-header" id="coffeeHeading">
-            <button class="accordion-button collapsed" 
-                    type="button" 
-                    data-bs-toggle="collapse" 
-                    data-bs-target="#coffeeCollapse" 
-                    aria-expanded="false" 
-                    aria-controls="coffeeCollapse">
-              Buy me a coffee
-            </button>
-          </h2>
-          <div id="coffeeCollapse" class="accordion-collapse collapse" aria-labelledby="coffeeHeading" data-bs-parent="#coffeeAccordion">
-            <div class="accordion-body text-center">
-              <p>If you enjoy this tool, consider buying me a coffee ☕️</p>
-              <img src="https://cdn.jsdelivr.net/gh/nasimulhasan/label2@master/qr.jpeg" alt="Buy me a coffee" class="img-fluid rounded" />
-            </div>
-          </div>
-        </div>
+        <!-- ... coffee accordion ... -->
       </div>
 
     </div>
@@ -107,13 +72,15 @@
     const { jsPDF } = window.jspdf;
     let parsedRows = [], invoiceList = [];
     const alertPlaceholder = document.getElementById('alertPlaceholder');
-    function showAlert(message, type='danger') {
-      const wrap = document.createElement('div');
-      wrap.innerHTML = `<div class="alert alert-${type} alert-dismissible" role="alert">
-        ${message}
-        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-      </div>`;
-      alertPlaceholder.append(wrap);
+
+    function showAlert(msg, type='danger') {
+      const wr = document.createElement('div');
+      wr.innerHTML = `
+        <div class="alert alert-${type} alert-dismissible" role="alert">
+          ${msg}
+          <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>`;
+      alertPlaceholder.append(wr);
     }
 
     document.getElementById('excelInput').addEventListener('change', async e => {
@@ -123,11 +90,14 @@
         const buff = await readFileAsArrayBuffer(file);
         const wb = XLSX.read(buff, { type:'array' });
         const sheet = wb.Sheets[wb.SheetNames[0]];
-        let rows = XLSX.utils.sheet_to_json(sheet, { defval:'' });
+        let rows = XLSX.utils.sheet_to_json(sheet, { defval: '' });
         const keys = ["Invoice","First Name","Last Name","Phone","Address","Order Total Amount"];
         const last = {};
         rows = rows.map(r => {
-          keys.forEach(k => { if (r[k] !== '') last[k] = r[k]; else r[k] = last[k]||''; });
+          keys.forEach(k => {
+            if (r[k] !== '') last[k] = r[k];
+            else r[k] = last[k]||'';
+          });
           return r;
         });
         parsedRows = rows;
@@ -141,7 +111,7 @@
         });
         document.getElementById('invoiceSelection').classList.remove('hidden');
       } catch(err) {
-        showAlert('Error parsing Excel file: '+err.message);
+        showAlert('Error parsing Excel: '+err.message);
       }
     });
 
@@ -149,12 +119,13 @@
       alertPlaceholder.innerHTML = '';
       const hf = document.getElementById('headerInput').files[0];
       const ff = document.getElementById('footerInput').files[0];
-      if (!hf||!ff) { showAlert('Please select both header and footer images.'); return; }
-      if (!parsedRows.length) { showAlert('Please upload and parse an Excel file first.'); return; }
+      if (!hf||!ff) { showAlert('Select both header & footer images.'); return; }
+      if (!parsedRows.length) { showAlert('Upload & parse Excel first.'); return; }
 
-      const selOpts = Array.from(document.getElementById('invoiceSelect').selectedOptions);
-      const targets = selOpts.length ? selOpts.map(o=>o.value) : invoiceList;
-      const hd = await readFileAsDataURL(hf), fd = await readFileAsDataURL(ff);
+      const sel = Array.from(document.getElementById('invoiceSelect').selectedOptions);
+      const targets = sel.length ? sel.map(o=>o.value) : invoiceList;
+      const hd = await readFileAsDataURL(hf);
+      const fd = await readFileAsDataURL(ff);
       const pdfs = [];
 
       for (const inv of targets) {
@@ -171,7 +142,7 @@
         const name = titleCase(group[0]['First Name']+' '+group[0]['Last Name']);
         doc.text(`Name: ${name}`, leftMargin, y); y+=7;
 
-        // phone normalization
+        // Phone normalize
         let d = String(group[0].Phone).replace(/\D/g,'');
         if (d.startsWith('880')) d = d.slice(3);
         else if (d.startsWith('0')) d = d.slice(1);
@@ -179,11 +150,11 @@
         const phone = '0'+d;
         doc.text(`Phone: ${phone}`, leftMargin, y); y+=7;
 
-        // combined address
+        // Address on same lines
         const fullAddr = `Address: ${titleCase(group[0].Address)}`;
         const addrLines = doc.splitTextToSize(fullAddr, 66);
         addrLines.forEach((line, i) => {
-          doc.text(line, leftMargin, y + i*7);
+          doc.text(line, leftMargin, y + i * 7);
         });
         y += addrLines.length * 7;
 
@@ -206,19 +177,19 @@
 
       const zip = new JSZip();
       pdfs.forEach(f=>zip.file(f.name, f.blob));
-      const blob = await zip.generateAsync({type:'blob'});
+      const blob = await zip.generateAsync({ type:'blob' });
       saveAs(blob, 'shipping_labels.zip');
     });
 
     function readFileAsDataURL(f) {
-      return new Promise(r=>{
+      return new Promise(r=> {
         const rd = new FileReader();
         rd.onload = ()=>r(rd.result);
         rd.readAsDataURL(f);
       });
     }
     function readFileAsArrayBuffer(f) {
-      return new Promise(r=>{
+      return new Promise(r=> {
         const rd = new FileReader();
         rd.onload = ()=>r(rd.result);
         rd.readAsArrayBuffer(f);
@@ -226,7 +197,8 @@
     }
     function titleCase(s) {
       return String(s).toLowerCase().split(' ')
-        .map(w=>w.charAt(0).toUpperCase()+w.slice(1)).join(' ');
+        .map(w=>w.charAt(0).toUpperCase()+w.slice(1))
+        .join(' ');
     }
   </script>
 </body>
