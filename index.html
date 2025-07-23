@@ -278,5 +278,16 @@
       wireCustomToggle('manPresetSize','manCustomSizeFields');
     });
   </script>
+  <script>
+  const excelInput       = document.getElementById('excelInput');
+  const invoiceSelect    = document.getElementById('invoiceSelect');
+  const invoiceSelection = document.getElementById('invoiceSelection');
+
+  excelInput.addEventListener('change', async (e) => {
+    // … same parsing + population logic …
+    invoiceSelection.classList.remove('hidden');
+  });
+</script>
+
 </body>
 </html>
