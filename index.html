@@ -36,62 +36,56 @@
           <button id="unlockBtn" class="btn btn-primary w-100 mb-3">Unlock</button>
           <div id="unlockAlert"></div>
 
+          <!-- Corrected Accordion -->
+          <div class="accordion mt-4" id="unlockInfoAccordion">
+            <div class="accordion-item">
+              <h2 class="accordion-header" id="headingUnlockInfo">
+                <button
+                  class="accordion-button collapsed"
+                  type="button"
+                  data-bs-toggle="collapse"
+                  data-bs-target="#collapseUnlockInfo"
+                  aria-expanded="false"
+                  aria-controls="collapseUnlockInfo"
+                >
+                  এক্টিভেশন কোড কিভাবে পাবেন?
+                </button>
+              </h2>
+              <div
+                id="collapseUnlockInfo"
+                class="accordion-collapse collapse"
+                aria-labelledby="headingUnlockInfo"
+                data-bs-parent="#unlockInfoAccordion"
+              >
+                <div class="accordion-body">
+                  <p>
+                    এক্টিভেশন কোড পেতে ০১৬১০৯২৬৯২৭ নাম্বারে বিকাশের মাধ্যমে ১৯৯ টাকা সেন্ড মানি করুন।
+                    তারপর বিকাশের ট্রানজেকশন আইডিটি একই নাম্বারেে হোয়াটসঅ্যাপে পাঠান। আপনার পেমেন্ট
+                    নিশ্চিত হওয়ার পর ১০ থেকে ১৫ মিনিটের মধ্যে ফিরতি হোয়াটসঅ্যাপ মেসেজে অ্যাক্টিভেশন
+                    কোড পাঠানো হবে। লক্ষ্য করুন, এটি একটি বিকাশ পার্সোনাল নাম্বারে। আপনাকে অবশ্যই 'সেন্ড মানি' অপশন ব্যবহার
+                    করতে হবে। এই নাম্বারে 'ক্যাশ আউট' বা 'পেমেন্ট' অপশন ব্যবহার করা যাবে না।
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+          <!-- End Accordion -->
 
-<!-- Corrected Accordion -->
-<div class="accordion mt-4" id="unlockInfoAccordion">
-  <div class="accordion-item">
-    <h2 class="accordion-header" id="headingUnlockInfo">
-      <button
-        class="accordion-button collapsed"
-        type="button"
-        data-bs-toggle="collapse"
-        data-bs-target="#collapseUnlockInfo"
-        aria-expanded="false"
-        aria-controls="collapseUnlockInfo"
-      >
-        এক্টিভেশন কোড কিভাবে পাবেন?
-      </button>
-    </h2>
-    <div
-      id="collapseUnlockInfo"
-      class="accordion-collapse collapse"
-      aria-labelledby="headingUnlockInfo"
-      data-bs-parent="#unlockInfoAccordion"
-    >
-      <div class="accordion-body">
-        <p>
-          এক্টিভেশন কোড পেতে ০১৬১০৯২৬৯২৭ নাম্বারে বিকাশের মাধ্যমে ১৯৯ টাকা সেন্ড মানি করুন।
-          তারপর বিকাশের ট্রানজেকশন আইডিটি একই নাম্বারেে হোয়াটসঅ্যাপে পাঠান। আপনার পেমেন্ট
-          নিশ্চিত হওয়ার পর ১০ থেকে ১৫ মিনিটের মধ্যে ফিরতি হোয়াটসঅ্যাপ মেসেজে অ্যাক্টিভেশন
-          কোড পাঠানো হবে। লক্ষ্য করুন, এটি একটি বিকাশ পার্সোনাল নাম্বারে। আপনাকে অবশ্যই 'সেন্ড মানি' অপশন ব্যবহার
-          করতে হবে। এই নাম্বারে 'ক্যাশ আউট' বা 'পেমেন্ট' অপশন ব্যবহার করা যাবে না।
-        </p>
-      </div>
-    </div>
-  </div>
-</div>
-<!-- End Accordion -->
+          <!-- Social Links Card (10px gap via inline style) -->
+          <div class="card shadow-sm mb-4" style="margin-top:10px;">
+            <div class="card-body text-center">
+              <a href="https://www.youtube.com/YourChannel" target="_blank" class="btn btn-danger me-2">
+                <i class="bi bi-youtube"></i> ব্যবহারের নিয়ম
+              </a>
+              <a href="https://wa.me/8801610926927" target="_blank" class="btn btn-success">
+                <i class="bi bi-whatsapp"></i> WhatsApp
+              </a>
+            </div>
+          </div>
+          <!-- End Social Links -->
 
-<!-- Social Links Card: add starts here -->
-<div class="card shadow-sm mb-4" style="margin-top:10px;">
-  <div class="card-body text-center">
-    <a href="https://www.youtube.com/YourChannel" target="_blank" class="btn btn-danger me-2">
-      <i class="bi bi-youtube"></i> ব্যবহারের নিয়ম
-    </a>
-    <a href="https://wa.me/8801610926927" target="_blank" class="btn btn-success">
-      <i class="bi bi-whatsapp"></i> WhatsApp
-    </a>
-  </div>
-</div>
-<!-- Social Links Card: add ends here -->
-
-</div>  <!-- end .card-body of unlockPage -->
-</div>  <!-- end #unlockPage -->
-
-
-
-
-          
+        </div>  <!-- end .card-body of unlockPage -->
+      </div>  <!-- end #unlockPage -->
 
       <!-- Generators (hidden until unlocked) -->
       <div id="generatorPage" class="hidden">
@@ -266,10 +260,22 @@
     };
   </script>
 
-  <!-- Main generator logic -->
+  <!-- Main generator logic + custom size toggle -->
   <script>
     document.addEventListener('DOMContentLoaded', () => {
       // … your existing SheetJS/jsPDF/JSZip wiring goes here …
+
+      // Toggle custom‑size inputs
+      function wireCustomToggle(selectId, fieldsId) {
+        const sel = document.getElementById(selectId);
+        const fld = document.getElementById(fieldsId);
+        sel.addEventListener('change', () => {
+          if (sel.value === 'custom') fld.classList.remove('d-none');
+          else fld.classList.add('d-none');
+        });
+      }
+      wireCustomToggle('presetSize',   'customSizeFields');
+      wireCustomToggle('manPresetSize','manCustomSizeFields');
     });
   </script>
 </body>
