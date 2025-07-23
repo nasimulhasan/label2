@@ -15,8 +15,13 @@
   <!-- FileSaver for saving blobs -->
   <script src="https://cdn.jsdelivr.net/npm/file-saver@2.0.5/dist/FileSaver.min.js"></script>
   <style>
-    body { padding-top: 2rem; background: #f8f9fa; }
-    .hidden { display: none; }
+    body {
+      padding-top: 2rem;
+      background: #f8f9fa;
+    }
+    .hidden {
+      display: none;
+    }
   </style>
 </head>
 <body>
@@ -30,7 +35,87 @@
 
           <!-- Instructions Accordion -->
           <div class="accordion mb-4" id="instructionsAccordion">
-            <!-- ... your instructions here ... -->
+            <div class="accordion-item">
+              <h2 class="accordion-header" id="instructionsHeading">
+                <button class="accordion-button collapsed" type="button"
+                        data-bs-toggle="collapse"
+                        data-bs-target="#instructionsCollapse"
+                        aria-expanded="false"
+                        aria-controls="instructionsCollapse">
+                  Instructions
+                </button>
+              </h2>
+              <div id="instructionsCollapse" class="accordion-collapse collapse"
+                   aria-labelledby="instructionsHeading"
+                   data-bs-parent="#instructionsAccordion">
+                <div class="accordion-body">
+                  <h5 class="mb-3">ব্যবহার নির্দেশনা</h5>
+                  <ol class="ps-3">
+                    <li class="mb-2">
+                      <strong>PDF সাইজ:</strong>
+                      <ul class="ps-3 mb-0">
+                        <li>প্রতিটি লেবেল PDF-এর ডিফল্ট আকার: 152.4 mm × 101.6 mm (6″ × 4″)।</li>
+                      </ul>
+                    </li>
+                    <li class="mb-2">
+                      <strong>ইমেজ সাইজ:</strong>
+                      <ul class="ps-3 mb-0">
+                        <li>হেডার: কমপক্ষে 900×300px (JPEG/PNG)</li>
+                        <li>ফুটার: কমপক্ষে 900×450px (JPEG/PNG)</li>
+                        <li>ছবি স্ট্রেচ বা ক্রপ না করে সম্পূর্ণ প্রস্থ ঢাকা উচিত।</li>
+                      </ul>
+                    </li>
+                    <li class="mb-2">
+                      <strong>এক্সেল ফাইল ফরম্যাট:</strong>
+                      <ul class="ps-3 mb-0">
+                        <li>এক্সটেনশন: <code>.xls</code>, <code>.xlsx</code></li>
+                        <li>কলাম হেডার থাকা উচিত: <code>Invoice</code>, <code>First Name</code>, <code>Last Name</code>, <code>Phone</code>, <code>Address</code>, <code>Order Total Amount</code></li>
+                        <li>যদি কোনো সেলে মান না থাকে, তাহলে আগের সারি থেকে ফরওয়ার্ড-ফিল হবে।</li>
+                      </ul>
+                    </li>
+                    <li class="mb-2">
+                      <strong>ফোন নম্বর ফরম্যাট:</strong>
+                      <ul class="ps-3 mb-0">
+                        <li>১১ সংখ্যার, সব সময় <code>01xxxxxxxxx</code> ফরম্যাটে দেখাবে।</li>
+                        <li><code>+880</code> বা অন্যান্য ক্যারেক্টার স্বয়ংক্রিয়ভাবে সরিয়ে ফেলবে।</li>
+                      </ul>
+                    </li>
+                    <li class="mb-2">
+                      <strong>ইনভয়েস সিলেকশন:</strong>
+                      <ul class="ps-3 mb-0">
+                        <li>একাধিক বাছাই করতে Ctrl (Windows) বা Cmd (Mac) চেপে ধরুন।</li>
+                        <li>কিছু না বাছলে সব ইনভয়েস জেনারেট হবে।</li>
+                      </ul>
+                    </li>
+                    <li class="mb-2">
+                      <strong>জেনারেট ও ডাউনলোড:</strong>
+                      <ul class="ps-3 mb-0">
+                        <li>“Generate Labels” এ ক্লিক করলে <code>shipping_labels.zip</code> নামের ZIP ডাউনলোড হবে।</li>
+                      </ul>
+                    </li>
+                    <li class="mb-2">
+                      <strong>ব্রাউজার সুপারিশ:</strong>
+                      <ul class="ps-3 mb-0">
+                        <li>Chrome, Firefox বা Edge-এর সাম্প্রতিক ভার্সন ব্যবহার করুন।</li>
+                      </ul>
+                    </li>
+                    <li class="mb-2">
+                      <strong>সমস্যা ও সমাধান:</strong>
+                      <ul class="ps-3 mb-0">
+                        <li>Excel পার্সে সমস্যা হলে Error মেসেজ দেখে ফরম্যাট ঠিক করুন।</li>
+                        <li>ফোন নম্বর অস্বাভাবিক দেখালে Excel-এ শুধু সংখ্যা নিশ্চিত করুন।</li>
+                      </ul>
+                    </li>
+                    <li>
+                      <strong>সহযোগিতা:</strong>
+                      <ul class="ps-3 mb-0">
+                        <li>কোনো প্রশ্ন বা বাগ জানাতে যোগাযোগ করুন—আপডেট দেওয়া হবে।</li>
+                      </ul>
+                    </li>
+                  </ol>
+                </div>
+              </div>
+            </div>
           </div>
 
           <!-- Form -->
@@ -50,9 +135,13 @@
             <div id="invoiceSelection" class="mb-2 hidden">
               <label for="invoiceSelect" class="form-label">Select Invoices (optional)</label>
               <select id="invoiceSelect" class="form-select" multiple size="8"></select>
-              <div class="form-text">Hold Ctrl (Windows) / Cmd (Mac) to select multiple.</div>
+              <div class="form-text">
+                Hold Ctrl (Windows) / Cmd (Mac) to select multiple. Leave unselected to generate all.
+              </div>
             </div>
-            <button type="button" id="generateBtn" class="btn btn-primary w-100">Generate Labels</button>
+            <button type="button" id="generateBtn" class="btn btn-primary w-100">
+              Generate Labels
+            </button>
           </form>
           <div id="alertPlaceholder" class="mt-3"></div>
         </div>
@@ -60,144 +149,190 @@
 
       <!-- Buy Me a Coffee Accordion -->
       <div class="accordion mb-4" id="coffeeAccordion">
-        <!-- ... coffee accordion ... -->
+        <div class="accordion-item">
+          <h2 class="accordion-header" id="coffeeHeading">
+            <button class="accordion-button collapsed" 
+                    type="button" 
+                    data-bs-toggle="collapse" 
+                    data-bs-target="#coffeeCollapse" 
+                    aria-expanded="false" 
+                    aria-controls="coffeeCollapse">
+              Buy me a coffee
+            </button>
+          </h2>
+          <div id="coffeeCollapse" 
+               class="accordion-collapse collapse" 
+               aria-labelledby="coffeeHeading" 
+               data-bs-parent="#coffeeAccordion">
+            <div class="accordion-body text-center">
+              <p>If you enjoy this tool, consider buying me a coffee ☕️</p>
+              <img src="https://cdn.jsdelivr.net/gh/nasimulhasan/label2@master/qr.jpeg" 
+                   alt="Buy me a coffee" 
+                   class="img-fluid rounded" />
+            </div>
+          </div>
+        </div>
       </div>
 
     </div>
   </div>
 
-  <!-- Bootstrap Bundle JS -->
+  <!-- Bootstrap Bundle JS (includes Popper) -->
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
   <script>
     const { jsPDF } = window.jspdf;
-    let parsedRows = [], invoiceList = [];
-    const alertPlaceholder = document.getElementById('alertPlaceholder');
+    let parsedRows = [];
+    let invoiceList = [];
 
-    function showAlert(msg, type='danger') {
-      const wr = document.createElement('div');
-      wr.innerHTML = `
+    const alertPlaceholder = document.getElementById('alertPlaceholder');
+    function showAlert(message, type='danger') {
+      const wrapper = document.createElement('div');
+      wrapper.innerHTML = `
         <div class="alert alert-${type} alert-dismissible" role="alert">
-          ${msg}
-          <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+          ${message}
+          <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
         </div>`;
-      alertPlaceholder.append(wr);
+      alertPlaceholder.append(wrapper);
     }
 
-    document.getElementById('excelInput').addEventListener('change', async e => {
+    document.getElementById('excelInput').addEventListener('change', async (e) => {
       const file = e.target.files[0];
       if (!file) return;
       try {
         const buff = await readFileAsArrayBuffer(file);
-        const wb = XLSX.read(buff, { type:'array' });
+        const wb = XLSX.read(buff, { type: 'array' });
         const sheet = wb.Sheets[wb.SheetNames[0]];
         let rows = XLSX.utils.sheet_to_json(sheet, { defval: '' });
+
+        // Forward-fill
         const keys = ["Invoice","First Name","Last Name","Phone","Address","Order Total Amount"];
         const last = {};
         rows = rows.map(r => {
           keys.forEach(k => {
             if (r[k] !== '') last[k] = r[k];
-            else r[k] = last[k]||'';
+            else r[k] = last[k] || '';
           });
           return r;
         });
         parsedRows = rows;
-        invoiceList = [...new Set(rows.map(r=>String(r.Invoice).trim()))].sort();
+
+        // Populate invoices
+        invoiceList = [...new Set(rows.map(r => String(r['Invoice']).trim()))].sort();
         const sel = document.getElementById('invoiceSelect');
         sel.innerHTML = '';
         invoiceList.forEach(inv => {
-          const o = document.createElement('option');
-          o.value = inv; o.textContent = inv;
-          sel.appendChild(o);
+          const opt = document.createElement('option');
+          opt.value = inv;
+          opt.textContent = inv;
+          sel.appendChild(opt);
         });
         document.getElementById('invoiceSelection').classList.remove('hidden');
-      } catch(err) {
-        showAlert('Error parsing Excel: '+err.message);
+      } catch (err) {
+        showAlert('Error parsing Excel file: ' + err.message);
       }
     });
 
     document.getElementById('generateBtn').addEventListener('click', async () => {
       alertPlaceholder.innerHTML = '';
-      const hf = document.getElementById('headerInput').files[0];
-      const ff = document.getElementById('footerInput').files[0];
-      if (!hf||!ff) { showAlert('Select both header & footer images.'); return; }
-      if (!parsedRows.length) { showAlert('Upload & parse Excel first.'); return; }
+      const headerFile = document.getElementById('headerInput').files[0];
+      const footerFile = document.getElementById('footerInput').files[0];
+      if (!headerFile || !footerFile) {
+        showAlert('Please select both header and footer images.');
+        return;
+      }
+      if (!parsedRows.length) {
+        showAlert('Please upload and parse an Excel file first.');
+        return;
+      }
 
-      const sel = Array.from(document.getElementById('invoiceSelect').selectedOptions);
-      const targets = sel.length ? sel.map(o=>o.value) : invoiceList;
-      const hd = await readFileAsDataURL(hf);
-      const fd = await readFileAsDataURL(ff);
+      // Determine target invoices
+      const selectedOpts = Array.from(document.getElementById('invoiceSelect').selectedOptions);
+      const targets = selectedOpts.length
+        ? selectedOpts.map(o => o.value)
+        : invoiceList;
+
+      const headerDataUrl = await readFileAsDataURL(headerFile);
+      const footerDataUrl = await readFileAsDataURL(footerFile);
       const pdfs = [];
 
       for (const inv of targets) {
-        const group = parsedRows.filter(r=>String(r.Invoice).trim()===inv);
+        const group = parsedRows.filter(r => String(r['Invoice']).trim() === inv);
         if (!group.length) continue;
         const doc = new jsPDF({ unit:'mm', format:[152.4,101.6] });
         doc.setFontSize(10);
-        doc.addImage(hd,'PNG',0,0,101.6,30);
-        doc.addImage(fd,'PNG',0,106.4,101.6,49);
+
+        // Header & footer images
+        doc.addImage(headerDataUrl, 'PNG', 0, 0, 101.6, 30);
+        doc.addImage(footerDataUrl, 'PNG', 0, 106.4, 101.6, 49);
 
         const leftMargin = 10;
         let y = 41;
-        doc.text(`Invoice #: ${inv}`, leftMargin, y); y+=7;
-        const name = titleCase(group[0]['First Name']+' '+group[0]['Last Name']);
-        doc.text(`Name: ${name}`, leftMargin, y); y+=7;
+        doc.text(`Invoice #: ${inv}`, leftMargin, y); y += 7;
+        const name = titleCase(group[0]['First Name'] + ' ' + group[0]['Last Name']);
+        doc.text(`Name: ${name}`, leftMargin, y); y += 7;
 
-        // Phone normalize
-        let d = String(group[0].Phone).replace(/\D/g,'');
-        if (d.startsWith('880')) d = d.slice(3);
-        else if (d.startsWith('0')) d = d.slice(1);
-        if (d.length>10) d = d.slice(-10);
-        const phone = '0'+d;
-        doc.text(`Phone: ${phone}`, leftMargin, y); y+=7;
+        // Normalize phone so it always becomes 0xxxxxxxxxx
+        let raw = String(group[0]['Phone']);
+        let digits = raw.replace(/\D/g, '');
+        if (digits.startsWith('880')) {
+          digits = digits.slice(3);
+        } else if (digits.startsWith('0')) {
+          digits = digits.slice(1);
+        }
+        if (digits.length > 10) {
+          digits = digits.slice(-10);
+        }
+        const phone = '0' + digits;
+        doc.text(`Phone: ${phone}`, leftMargin, y); y += 7;
 
-        // Address on same lines
-        const fullAddr = `Address: ${titleCase(group[0].Address)}`;
-        const addrLines = doc.splitTextToSize(fullAddr, 66);
-        addrLines.forEach((line, i) => {
-          doc.text(line, leftMargin, y + i * 7);
-        });
-        y += addrLines.length * 7;
+        doc.text('Address:', leftMargin, y); y += 7;
+        const addrLines = doc.splitTextToSize(titleCase(group[0]['Address']), 66);
+        doc.text(addrLines, leftMargin, y); y += addrLines.length * 7;
 
-        const notes = group.map(r=>r.NOTE||'').join(' ').toLowerCase();
+        const notes = group.map(r => r['NOTE'] || '').join(' ').toLowerCase();
         const total = notes.includes('paid') ? '0' : String(Math.round(group[0]['Order Total Amount']));
-        doc.text(`Total: Tk ${total}`, leftMargin, y); y+=7;
+        doc.text(`Total: Tk ${total}`, leftMargin, y); y += 7;
 
-        doc.text('Items:', leftMargin, y); y+=7;
+        doc.text('Items:', leftMargin, y); y += 7;
         group.forEach(r => {
-          const item = r.Items ? titleCase(r.Items) : '';
-          const qty = r.Quantity ? ` (${r.Quantity})` : '';
+          const item = r['Items'] ? titleCase(r['Items']) : '';
+          const qty = r['Quantity'] ? ` (${r['Quantity']})` : '';
           if (item) {
             doc.text(`- ${item}${qty}`, leftMargin, y);
-            y+=7;
+            y += 7;
           }
         });
 
-        pdfs.push({ name:`${inv}.pdf`, blob:doc.output('blob') });
+        pdfs.push({ name: `${inv}.pdf`, blob: doc.output('blob') });
       }
 
+      // Zip and download
       const zip = new JSZip();
-      pdfs.forEach(f=>zip.file(f.name, f.blob));
-      const blob = await zip.generateAsync({ type:'blob' });
-      saveAs(blob, 'shipping_labels.zip');
+      pdfs.forEach(f => zip.file(f.name, f.blob));
+      const zipBlob = await zip.generateAsync({ type:'blob' });
+      saveAs(zipBlob, 'shipping_labels.zip');
     });
 
-    function readFileAsDataURL(f) {
-      return new Promise(r=> {
-        const rd = new FileReader();
-        rd.onload = ()=>r(rd.result);
-        rd.readAsDataURL(f);
+    // Helpers
+    function readFileAsDataURL(file) {
+      return new Promise(res => {
+        const r = new FileReader();
+        r.onload = () => res(r.result);
+        r.readAsDataURL(file);
       });
     }
-    function readFileAsArrayBuffer(f) {
-      return new Promise(r=> {
-        const rd = new FileReader();
-        rd.onload = ()=>r(rd.result);
-        rd.readAsArrayBuffer(f);
+    function readFileAsArrayBuffer(file) {
+      return new Promise(res => {
+        const r = new FileReader();
+        r.onload = () => res(r.result);
+        r.readAsArrayBuffer(file);
       });
     }
-    function titleCase(s) {
-      return String(s).toLowerCase().split(' ')
-        .map(w=>w.charAt(0).toUpperCase()+w.slice(1))
+    function titleCase(str) {
+      return String(str)
+        .toLowerCase()
+        .split(' ')
+        .map(w => w.charAt(0).toUpperCase() + w.slice(1))
         .join(' ');
     }
   </script>
