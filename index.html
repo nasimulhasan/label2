@@ -275,6 +275,40 @@ function wireCustomToggle(selectId, fieldsId) {
         fld = document.getElementById(fieldsId);
   sel.addEventListener('change', () => {
     sel.value === 'custom' ? fld.classList.remove('d-none') : fld.classList.add('d-none');
+
+    // GENERATE BUTTON HANDLER
+document.getElementById('generateBtn').addEventListener('click', () => {
+  // grab selected invoice numbers
+  const selected = Array.from(
+    document.getElementById('invoiceSelect').selectedOptions
+  ).map(opt => opt.value);
+
+  if (selected.length === 0) {
+    return alert('Please select at least one invoice.');
+  }
+
+  // pull paper size (width,height,unit)
+  const [w, h, unit] = document
+    .getElementById('presetSize')
+    .value.split(',')
+    .map((v, i) => (i < 2 ? Number(v) : v));
+
+  // create PDF
+  const { jsPDF } = window.jspdf;
+  const doc = new jsPDF({ unit, format: [w, h] });
+
+  // one page per invoice
+  selected.forEach((inv, idx) => {
+    if (idx > 0) doc.addPage();
+    doc.setFontSize(16);
+    doc.text(`Invoice: ${inv}`, 10, 20);
+    // TODO: insert header/footer images or other data here
+  });
+
+  // download
+  doc.save('labels.pdf');
+});
+
   });
 }
 wireCustomToggle('presetSize', 'customSizeFields');
