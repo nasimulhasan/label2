@@ -242,110 +242,117 @@
 
   <!-- Unlock handler -->
   <script>
-    async function checkUnlock(code) {
-      const resp = await fetch('https://raw.githubusercontent.com/nasimulhasan/testlabel/main/keys.json');
-      if (!resp.ok) throw new Error();
-      const { validCodes } = await resp.json();
-      return validCodes.includes(code);
+  document.addEventListener('DOMContentLoaded', () => {
+    // 1) Toggle custom‑size inputs
+    function wireCustomToggle(selectId, fieldsId) {
+      const sel = document.getElementById(selectId),
+            fld = document.getElementById(fieldsId);
+      sel.addEventListener('change', () => {
+        sel.value === 'custom'
+          ? fld.classList.remove('d-none')
+          : fld.classList.add('d-none');
+      });
     }
-    document.getElementById('unlockBtn').onclick = async () => {
-      const code = document.getElementById('unlockInput').value.trim();
-      const alert = document.getElementById('unlockAlert');
-      alert.innerHTML = '';
+    wireCustomToggle('presetSize', 'customSizeFields');
+    wireCustomToggle('manPresetSize', 'manCustomSizeFields');
+
+    // 2) Invoice list populator
+    const excelInput       = document.getElementById('excelInput');
+    const invoiceSelect    = document.getElementById('invoiceSelect');
+    const invoiceSelection = document.getElementById('invoiceSelection');
+
+    excelInput.addEventListener('change', async (e) => {
+      const file = e.target.files[0];
+      if (!file) return;
       try {
-        if (await checkUnlock(code)) {
-          alert.innerHTML = '<div class="alert alert-success">Unlocked!</div>';
-          document.getElementById('unlockPage').classList.add('hidden');
-          document.getElementById('generatorPage').classList.remove('hidden');
-        } else {
-          alert.innerHTML = '<div class="alert alert-warning">Invalid code</div>';
-        }
-      } catch {
-        alert.innerHTML = '<div class="alert alert-danger">Error verifying code</div>';
-      }
-    };
-  </script>
+        const data = await file.arrayBuffer();
+        const wb   = XLSX.read(data, { type: 'array' });
+        const sheet= wb.Sheets[wb.SheetNames[0]];
+        const rows = XLSX.utils.sheet_to_json(sheet, { defval: '' });
 
-  <!-- Main generator logic -->
-  <script>
-    document.addEventListener('DOMContentLoaded', () => {
-// show/hide custom‑size inputs (optional)
-function wireCustomToggle(selectId, fieldsId) {
-  const sel = document.getElementById(selectId),
-        fld = document.getElementById(fieldsId);
-  sel.addEventListener('change', () => {
-    sel.value === 'custom' ? fld.classList.remove('d-none') : fld.classList.add('d-none');
+        invoiceSelect.innerHTML = '';
+        rows.forEach(row => {
+          const inv = row['Invoice'] ?? row[Object.keys(row)[0]];
+          if (inv) {
+            const opt = document.createElement('option');
+            opt.value = inv;
+            opt.textContent = inv;
+            invoiceSelect.append(opt);
+          }
+        });
 
-    // GENERATE BUTTON HANDLER
-document.getElementById('generateBtn').addEventListener('click', () => {
-  // grab selected invoice numbers
-  const selected = Array.from(
-    document.getElementById('invoiceSelect').selectedOptions
-  ).map(opt => opt.value);
-
-  if (selected.length === 0) {
-    return alert('Please select at least one invoice.');
-  }
-
-  // pull paper size (width,height,unit)
-  const [w, h, unit] = document
-    .getElementById('presetSize')
-    .value.split(',')
-    .map((v, i) => (i < 2 ? Number(v) : v));
-
-  // create PDF
-  const { jsPDF } = window.jspdf;
-  const doc = new jsPDF({ unit, format: [w, h] });
-
-  // one page per invoice
-  selected.forEach((inv, idx) => {
-    if (idx > 0) doc.addPage();
-    doc.setFontSize(16);
-    doc.text(`Invoice: ${inv}`, 10, 20);
-    // TODO: insert header/footer images or other data here
-  });
-
-  // download
-  doc.save('labels.pdf');
-});
-
-  });
-}
-wireCustomToggle('presetSize', 'customSizeFields');
-
-// invoice list populator
-const excelInput       = document.getElementById('excelInput');
-const invoiceSelect    = document.getElementById('invoiceSelect');
-const invoiceSelection = document.getElementById('invoiceSelection');
-
-excelInput.addEventListener('change', async (e) => {
-  const file = e.target.files[0];
-  if (!file) return;
-
-  try {
-    const data = await file.arrayBuffer();
-    const wb   = XLSX.read(data, { type: 'array' });
-    const sheet= wb.Sheets[wb.SheetNames[0]];
-    const rows = XLSX.utils.sheet_to_json(sheet, { defval: '' });
-
-    invoiceSelect.innerHTML = '';
-    rows.forEach(row => {
-      const inv = row['Invoice'] ?? row[Object.keys(row)[0]];
-      if (inv) {
-        const opt = document.createElement('option');
-        opt.value = inv;
-        opt.textContent = inv;
-        invoiceSelect.append(opt);
+        invoiceSelection.classList.remove('hidden');
+      } catch (err) {
+        console.error(err);
+        alert('Failed to parse Excel file');
       }
     });
 
-    invoiceSelection.classList.remove('hidden');
-  } catch (err) {
-    console.error(err);
-    alert('Failed to parse Excel file');
-  }
-});
+    // 3) Generate Excel‑based PDF
+    document.getElementById('generateBtn').addEventListener('click', () => {
+      const selected = Array.from(
+        document.getElementById('invoiceSelect').selectedOptions
+      ).map(o => o.value);
+
+      if (!selected.length) {
+        return alert('Please select at least one invoice.');
+      }
+
+      const [w, h, unit] = document
+        .getElementById('presetSize')
+        .value.split(',')
+        .map((v, i) => (i < 2 ? Number(v) : v));
+
+      const { jsPDF } = window.jspdf;
+      const doc = new jsPDF({ unit, format: [w, h] });
+
+      selected.forEach((inv, idx) => {
+        if (idx > 0) doc.addPage();
+        doc.setFontSize(16);
+        doc.text(`Invoice: ${inv}`, 10, 20);
+      });
+
+      doc.save('labels.pdf');
     });
-  </script>
+
+    // 4) Generate Manual PDF
+    document.getElementById('generateManualBtn').addEventListener('click', () => {
+      const data = {
+        inv:   document.getElementById('manInvoice').value,
+        name:  document.getElementById('manFirstName').value + ' ' +
+               document.getElementById('manLastName').value,
+        phone: document.getElementById('manPhone').value,
+        addr:  document.getElementById('manAddress').value,
+        total: document.getElementById('manTotal').value,
+        items: document.getElementById('manItems').value
+                 .split('\n').filter(l => l.trim()),
+      };
+      if (!data.inv) return alert('Enter an invoice number.');
+
+      const [w, h, unit] = document
+        .getElementById('manPresetSize')
+        .value.split(',')
+        .map((v, i) => (i < 2 ? Number(v) : v));
+
+      const { jsPDF } = window.jspdf;
+      const doc = new jsPDF({ unit, format: [w, h] });
+
+      doc.setFontSize(16);
+      doc.text(`Invoice: ${data.inv}`, 10, 20);
+      doc.setFontSize(12);
+      doc.text(`Name: ${data.name}`, 10, 30);
+      doc.text(`Phone: ${data.phone}`, 10, 40);
+      doc.text(`Address: ${data.addr}`, 10, 50);
+      doc.text(`Total: ${data.total}`, 10, 60);
+      doc.text('Items:', 10, 70);
+      data.items.forEach((it, idx) => {
+        doc.text(`- ${it}`, 12, 80 + idx * 7);
+      });
+
+      doc.save('manual_label.pdf');
+    });
+  });
+</script>
+
 </body>
 </html>
