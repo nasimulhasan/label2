@@ -30,15 +30,16 @@
           <button type="button" class="btn btn-secondary mb-4 w-100" data-bs-toggle="modal" data-bs-target="#instructionsModal">
             Instructions
           </button>
-          <!-- Instructions Modal (not shown) should be above or included here as before -->
+          <!-- Instructions Modal (unchanged) -->
 
           <!-- Paper size controls -->
           <div class="mb-3 row">
             <label for="presetSize" class="col-sm-4 col-form-label">Paper Size</label>
             <div class="col-sm-8">
               <select id="presetSize" class="form-select">
-                <option value="152.4,101.6,mm">4×6 in (152.4×101.6 mm)</option>
-                <option value="101.6,152.4,mm">6×4 in (101.6×152.4 mm)</option>
+                <!-- Correct mapping: width,height -->
+                <option value="101.6,152.4,mm">4×6 in (101.6×152.4 mm)</option>
+                <option value="152.4,101.6,mm">6×4 in (152.4×101.6 mm)</option>
                 <option value="210,297,mm">A4 (210×297 mm)</option>
                 <option value="216,279,mm">Letter (216×279 mm)</option>
                 <option value="custom">Custom</option>
@@ -137,38 +138,83 @@
     document.getElementById('presetSize').addEventListener('change', e => {
       document.getElementById('customSizeFields').classList.toggle('d-none', e.target.value !== 'custom');
     });
+
     const alertPlaceholder = document.getElementById('alertPlaceholder');
     function showAlert(msg, type='danger') {
       const div = document.createElement('div');
       div.innerHTML = `<div class="alert alert-${type} alert-dismissible" role="alert">${msg}<button type="button" class="btn-close" data-bs-dismiss="alert"></button></div>`;
       alertPlaceholder.append(div);
     }
+
     document.getElementById('fontInput').addEventListener('change', async e => {
-      const file=e.target.files[0]; if(!file)return;
-      const dataUrl=await readFileAsDataURL(file); customFontName=file.name; customFontData=dataUrl.split(',')[1];
+      const file = e.target.files[0]; if (!file) return;
+      const dataUrl = await readFileAsDataURL(file);
+      customFontName = file.name; customFontData = dataUrl.split(',')[1];
     });
+
     document.getElementById('excelInput').addEventListener('change', async e => {
-      const file=e.target.files[0]; if(!file)return; try{
-        const buff=await readFileAsArrayBuffer(file), wb=XLSX.read(buff,{type:'array'});
-        let last={}; parsedRows=XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]],{defval:''}).map(r=>{['Invoice','First Name','Last Name','Phone','Address','Order Total Amount'].forEach(k=>r[k]=r[k]||last[k]||''); last={...r};return r;});
-        invoiceList=[...new Set(parsedRows.map(r=>String(r['Invoice']).trim()))].sort(); const sel=document.getElementById('invoiceSelect'); sel.innerHTML=''; invoiceList.forEach(i=>sel.append(new Option(i,i))); document.getElementById('invoiceSelection').classList.remove('hidden');
-      }catch(err){showAlert('Error parsing Excel: '+err.message);}    });
-    document.getElementById('generateBtn').addEventListener('click', async ()=>{
-      alertPlaceholder.innerHTML=''; const header=document.getElementById('headerInput').files[0], footer=document.getElementById('footerInput').files[0]; if(!header||!footer) return showAlert('Select both header and footer.'); if(!parsedRows.length) return showAlert('Upload and parse Excel first.');
-      let unit,w,h; const preset=document.getElementById('presetSize').value;
-      if(preset==='custom'){ w=+document.getElementById('paperWidth').value; h=+document.getElementById('paperHeight').value; unit=document.getElementById('paperUnit').value; if(unit==='in'){w*=25.4;h*=25.4;unit='mm';} if(unit==='pt'){w*=0.352778;h*=0.352778;unit='mm';}} else{[w,h,unit]=preset.split(',');w=+w;h=+h;}
-      const headerUrl=await readFileAsDataURL(header), footerUrl=await readFileAsDataURL(footer), zip=new JSZip();
-      const opts=Array.from(document.getElementById('invoiceSelect').selectedOptions).map(o=>o.value), targets=opts.length?opts:invoiceList;
-      for(const inv of targets){ const group=parsedRows.filter(r=>String(r['Invoice']).trim()===inv); if(!group.length) continue; const doc=new jsPDF({unit,format:[w,h]}); doc.setFontSize(10); if(customFontName&&customFontData){doc.addFileToVFS(customFontName,customFontData);doc.addFont(customFontName,'CustomFont','normal');doc.setFont('CustomFont','normal');}
-        const hp=doc.getImageProperties(headerUrl), hh=w*(hp.height/hp.width); doc.addImage(headerUrl,'PNG',0,0,w,hh);
-        const fp=doc.getImageProperties(footerUrl), fh=w*(fp.height/fp.width); doc.addImage(footerUrl,'PNG',0,h-fh,w,fh);
-        let y=hh+11,left=10; doc.text(`Invoice #: ${inv}`,left,y);y+=7; const name=titleCase(group[0]['First Name']+' '+group[0]['Last Name']); doc.text(`Name: ${name}`,left,y);y+=7;
-        let num=String(group[0]['Phone']).replace(/\D/g,''); if(num.startsWith('880'))num=num.slice(3);else if(num.startsWith('0'))num=num.slice(1); if(num.length>10)num=num.slice(-10); doc.text(`Phone: 0${num}`,left,y);y+=7;
-        const lines=doc.splitTextToSize(`Address: ${titleCase(group[0]['Address'])}`,w-left*2); doc.text(lines,left,y);y+=lines.length*7;
-        const notes=group.map(r=>r['NOTE']||'').join(' ').toLowerCase(), total=notes.includes('paid')?'0':String(Math.round(group[0]['Order Total Amount'])); doc.text(`Total: Tk ${total}`,left,y);y+=7;
-        doc.text('Items:',left,y);y+=7; group.forEach(r=>{const item=r['Items']?titleCase(r['Items']):'', qty=r['Quantity']?` (${r['Quantity']})`:''; if(item){doc.text(`- ${item}${qty}`,left,y);y+=7;}});
-        zip.file(`${inv}.pdf`,doc.output('blob')); }
-      const blob=await zip.generateAsync({type:'blob'}); saveAs(blob,'shipping_labels.zip'); });
-  </script>
-</body>
-</html>
+      const file = e.target.files[0]; if (!file) return;
+      try {
+        const buff = await readFileAsArrayBuffer(file);
+        const wb   = XLSX.read(buff, { type: 'array' });
+        let last = {};
+        parsedRows = XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]], { defval: '' })
+          .map(r => {
+            ['Invoice','First Name','Last Name','Phone','Address','Order Total Amount']
+              .forEach(k => r[k] = r[k] || last[k] || '');
+            last = {...r}; return r;
+          });
+        invoiceList = [...new Set(parsedRows.map(r => String(r['Invoice']).trim()))].sort();
+        const sel = document.getElementById('invoiceSelect'); sel.innerHTML = '';
+        invoiceList.forEach(i => sel.append(new Option(i, i)));
+        document.getElementById('invoiceSelection').classList.remove('hidden');
+      } catch(err) {
+        showAlert('Error parsing Excel: ' + err.message);
+      }
+    });
+
+    document.getElementById('generateBtn').addEventListener('click', async () => {
+      alertPlaceholder.innerHTML = '';
+      const headerFile = document.getElementById('headerInput').files[0];
+      const footerFile = document.getElementById('footerInput').files[0];
+      if (!headerFile || !footerFile) return showAlert('Select both header and footer.');
+      if (!parsedRows.length) return showAlert('Upload and parse Excel first.');
+
+      let unit, w, h;
+      const preset = document.getElementById('presetSize').value;
+      if (preset === 'custom') {
+        w = +document.getElementById('paperWidth').value;
+        h = +document.getElementById('paperHeight').value;
+        unit = document.getElementById('paperUnit').value;
+        if (unit === 'in') { w *= 25.4; h *= 25.4; unit = 'mm'; }
+        if (unit === 'pt') { w *= 0.352778; h *= 0.352778; unit = 'mm'; }
+      } else {
+        [w, h, unit] = preset.split(','); w = +w; h = +h;
+      }
+
+      const headerUrl = await readFileAsDataURL(headerFile);
+      const footerUrl = await readFileAsDataURL(footerFile);
+      const zip       = new JSZip();
+      const opts      = Array.from(document.getElementById('invoiceSelect').selectedOptions).map(o => o.value);
+      const targets   = opts.length ? opts : invoiceList;
+
+      for (const inv of targets) {
+        const group = parsedRows.filter(r => String(r['Invoice']).trim() === inv);
+        if (!group.length) continue;
+
+        const doc = new jsPDF({ unit, format: [w, h] });
+        doc.setFontSize(10);
+        if (customFontName && customFontData) {
+          doc.addFileToVFS(customFontName, customFontData);
+          doc.addFont(customFontName, 'CustomFont', 'normal');
+          doc.setFont('CustomFont', 'normal');
+        }
+        const hp = doc.getImageProperties(headerUrl), hh = w * (hp.height / hp.width);
+        doc.addImage(headerUrl, 'PNG', 0, 0, w, hh);
+        const fp = doc.getImageProperties(footerUrl), fh = w * (fp.height / fp.width);
+        doc.addImage(footerUrl, 'PNG', 0, h - fh, w, fh);
+        let y = hh + 11, left = 10;
+        doc.text(`Invoice #: ${inv}`, left, y); y += 7;
+        const name = titleCase(group[0]['First Name'] + ' ' + group[0]['Last Name']);
+        doc.text(`Name: ${name}`, left, y); y += 7;
+        let num = String(group[0]['Phone']).replace(/\D/g, '');
