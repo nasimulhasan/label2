@@ -6,6 +6,8 @@
   <title>Shipping Label Generator</title>
   <!-- Bootstrap CSS -->
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <!-- Bootstrap Icons -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
   <!-- SheetJS -->
   <script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
   <!-- jsPDF -->
@@ -15,163 +17,133 @@
   <!-- FileSaver -->
   <script src="https://cdn.jsdelivr.net/npm/file-saver@2.0.5/dist/FileSaver.min.js"></script>
   <style>
-    body { padding-top: 2rem; background: #f8f9fa; }
+    body { padding-top: 4rem; background: #f8f9fa; }
     .hidden { display: none; }
   </style>
 </head>
 <body>
   <div class="container d-flex justify-content-center">
-    <div class="w-100" style="max-width: 600px;">
+    <div class="w-50" style="max-width: 600px;">
 
-      <!-- Card -->
-      <div class="card shadow-sm mb-4">
-        <div class="card-body p-4">
-
-          <h1 class="card-title text-center mb-4">Custom Label Generator</h1>
-
-          <!-- Instructions Button -->
-          <button type="button" class="btn btn-secondary mb-4 w-100"
-                  data-bs-toggle="modal" data-bs-target="#instructionsModal">
-            Instructions
-          </button>
-
-          <!-- Instructions Modal -->
-          <div class="modal fade" id="instructionsModal" tabindex="-1"
-               aria-labelledby="instructionsModalLabel" aria-hidden="true">
-            <div class="modal-dialog modal-lg">
-              <div class="modal-content">
-                <div class="modal-header">
-                  <h5 class="modal-title" id="instructionsModalLabel">ব্যবহার নির্দেশনা</h5>
-                  <button type="button" class="btn-close"
-                          data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                <div class="modal-body">
-                  <ol class="ps-3">
-                    <li class="mb-3">
-                      <strong>PDF সাইজ:</strong>
-                      <ul class="ps-3 mb-0">
-                        <li>ডিফল্ট: <code class="text-primary">152.4 mm × 101.6 mm</code> (6″ × 4″)</li>
-                      </ul>
-                    </li>
-                    <li class="mb-3">
-                      <strong>ইমেজ সাইজ:</strong>
-                      <ul class="ps-3 mb-0">
-                        <li>হেডার: ≥900×300px (JPEG/PNG)</li>
-                        <li>ফুটার: ≥900×450px (JPEG/PNG)</li>
-                        <li class="text-warning"><strong>মহত্বপূর্ণ:</strong> হেডার ও ফুটার স্বয়ংক্রিয়ভাবে লেবেলের
-                          প্রস্থ অনুযায়ী প্রসারিত হবে।</li>
-                      </ul>
-                    </li>
-                    <li class="mb-3">
-                      <strong>এক্সেল:</strong>
-                      <ul class="ps-3 mb-0">
-                        <li>এক্সটেনশন: <code>.xls</code>, <code>.xlsx</code> &mdash;
-                          <a href="EXCEL_TEMPLATE_URL" target="_blank">ডাউনলোড টেমপ্লেট</a>
-                        </li>
-                        <li>কলাম: <code>Invoice</code>, <code>First Name</code>, <code>Last Name</code>,
-                          <code>Phone</code>, <code>Address</code>, <code>Order Total Amount</code></li>
-                      </ul>
-                    </li>
-                    <li class="mb-3">
-                      <strong>ইনভয়েস সিলেকশন:</strong>
-                      <ul class="ps-3 mb-0">
-                        <li>Ctrl (Win) / Cmd (Mac) দিয়ে একাধিক নির্বাচন</li>
-                      </ul>
-                    </li>
-                    <li class="mb-3">
-                      <strong>ডাউনলোড:</strong> <code>shipping_labels.zip</code>
-                    </li>
-                  </ol>
-                  <p class="text-info">
-                    <strong>ভিডিও নির্দেশিকা:</strong>
-                    <a href="YOUTUBE_URL" target="_blank">টিউটোরিয়াল দেখুন</a>
-                  </p>
-                  <p class="text-info">
-                    পরামর্শ: প্রয়োজনমতো Custom সাইজ নির্বাচন করুন।
-                  </p>
+      <!-- Unlock Page -->
+      <div id="unlockPage" class="card shadow-sm mb-4">
+        <div class="card-body p-4 text-center">
+          <h1 class="card-title mb-4">Enter Unlock Code</h1>
+          <div class="mb-3">
+            <input type="text" id="unlockInput" class="form-control" placeholder="Enter unlock code">
+          </div>
+          <button id="unlockBtn" class="btn btn-primary w-100">Unlock</button>
+          <div id="unlockAlert" class="mt-3"></div>
+          <div class="mt-3 d-flex justify-content-center gap-3">
+            <a href="YOUTUBE_URL" target="_blank" class="text-decoration-none text-dark d-flex align-items-center">
+              <i class="bi bi-youtube fs-4 text-danger"></i><span class="ms-2">See instructions</span>
+            </a>
+            <a href="https://wa.me/8801610926927" target="_blank" class="text-decoration-none text-success d-flex align-items-center">
+              <i class="bi bi-whatsapp fs-4"></i><span class="ms-2">Contact us</span>
+            </a>
+          </div>
+          <div class="accordion mt-4" id="unlockInfoAccordion">
+            <div class="accordion-item">
+              <h2 class="accordion-header" id="headingUnlockInfo">
+                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseUnlockInfo" aria-expanded="false" aria-controls="collapseUnlockInfo">
+                  How to get Unlock Code?
+                </button>
+              </h2>
+              <div id="collapseUnlockInfo" class="accordion-collapse collapse" aria-labelledby="headingUnlockInfo" data-bs-parent="#unlockInfoAccordion">
+                <div class="accordion-body text-start">
+                  <p>To obtain an unlock code, please visit our pricing page and complete the purchase form. Once payment is confirmed, your code will be emailed.</p>
                 </div>
               </div>
             </div>
           </div>
-
-          <!-- Paper size controls -->
-          <div class="mb-3 row">
-            <label for="presetSize" class="col-sm-4 col-form-label">Paper Size</label>
-            <div class="col-sm-8">
-              <select id="presetSize" class="form-select">
-                <option value="101.6,152.4,mm">4×6 in (101.6×152.4 mm)</option>
-                <option value="152.4,101.6,mm">6×4 in (152.4×101.6 mm)</option>
-                <option value="210,297,mm">A4 (210×297 mm)</option>
-                <option value="216,279,mm">Letter (216×279 mm)</option>
-                <option value="custom">Custom</option>
-              </select>
-            </div>
-          </div>
-          <div id="customSizeFields" class="mb-3 row d-none">
-            <div class="col-sm-4">
-              <label for="paperWidth" class="form-label">Width</label>
-              <input type="number" id="paperWidth" class="form-control" placeholder="Width">
-            </div>
-            <div class="col-sm-4">
-              <label for="paperHeight" class="form-label">Height</label>
-              <input type="number" id="paperHeight" class="form-control" placeholder="Height">
-            </div>
-            <div class="col-sm-4">
-              <label for="paperUnit" class="form-label">Unit</label>
-              <select id="paperUnit" class="form-select">
-                <option value="mm" selected>mm</option>
-                <option value="in">in</option>
-                <option value="pt">pt</option>
-              </select>
-            </div>
-          </div>
-
-          <!-- Form Inputs -->
-          <form id="labelForm">
-            <div class="mb-2">
-              <label for="fontInput" class="form-label">Upload Font (TTF/OTF)</label>
-              <input type="file" id="fontInput" class="form-control" accept=".ttf,.otf">
-            </div>
-            <div class="mb-2">
-              <label for="headerInput" class="form-label">Header Image</label>
-              <input type="file" id="headerInput" class="form-control" accept="image/*">
-            </div>
-            <div class="mb-2">
-              <label for="footerInput" class="form-label">Footer Image</label>
-              <input type="file" id="footerInput" class="form-control" accept="image/*">
-            </div>
-            <div class="mb-2">
-              <label for="excelInput" class="form-label">Excel File</label>
-              <input type="file" id="excelInput" class="form-control" accept=".xls,.xlsx">
-            </div>
-            <div id="invoiceSelection" class="mb-2 hidden">
-              <label for="invoiceSelect" class="form-label">Select Invoices (optional)</label>
-              <select id="invoiceSelect" class="form-select" multiple size="8"></select>
-              <div class="form-text">Hold Ctrl (Win) / Cmd (Mac) to select multiple.</div>
-            </div>
-            <button type="button" id="generateBtn" class="btn btn-primary w-100">Generate Labels</button>
-          </form>
-          <div id="alertPlaceholder" class="mt-3"></div>
         </div>
       </div>
 
-      <!-- Buy me a coffee Accordion -->
-      <div class="accordion mb-4" id="coffeeAccordion">
-        <div class="accordion-item">
-          <h2 class="accordion-header" id="coffeeHeading">
-            <button class="accordion-button collapsed" type="button"
-                    data-bs-toggle="collapse" data-bs-target="#coffeeCollapse"
-                    aria-expanded="false" aria-controls="coffeeCollapse">
-              Buy me a coffee
-            </button>
-          </h2>
-          <div id="coffeeCollapse" class="accordion-collapse collapse"
-               aria-labelledby="coffeeHeading" data-bs-parent="#coffeeAccordion">
-            <div class="accordion-body text-center">
-              <p>If you enjoy this tool, consider buying me a coffee ☕️</p>
-              <img src="https://cdn.jsdelivr.net/gh/nasimulhasan/label2@master/qr.jpeg"
-                   alt="Buy me a coffee"
-                   class="img-fluid rounded" />
+      <!-- Generator Page (hidden until unlocked) -->
+      <div id="generatorPage" class="hidden">
+        <div class="row">
+          <!-- Excel Input Card -->
+          <div class="col-12 mb-4">
+            <div class="card shadow-sm">
+              <div class="card-body p-4">
+                <h2 class="h5 mb-3">Excel Label Generator</h2>
+                <div class="mb-3 row">
+                  <label class="col-sm-4 col-form-label">Paper Size</label>
+                  <div class="col-sm-8">
+                    <select id="presetSize" class="form-select">
+                      <option value="101.6,152.4,mm">4×6 in</option>
+                      <option value="152.4,101.6,mm">6×4 in</option>
+                      <option value="210,297,mm">A4</option>
+                      <option value="216,279,mm">Letter</option>
+                      <option value="custom">Custom</option>
+                    </select>
+                  </div>
+                </div>
+                <div id="customSizeFields" class="mb-3 row d-none">
+                  <div class="col-sm-4"><input type="number" id="paperWidth" class="form-control" placeholder="Width"></div>
+                  <div class="col-sm-4"><input type="number" id="paperHeight" class="form-control" placeholder="Height"></div>
+                  <div class="col-sm-4">
+                    <select id="paperUnit" class="form-select">
+                      <option value="mm" selected>mm</option>
+                      <option value="in">in</option>
+                      <option value="pt">pt</option>
+                    </select>
+                  </div>
+                </div>
+                <form id="labelForm">
+                  <div class="mb-2"><input type="file" id="fontInput" class="form-control" accept=".ttf,.otf"></div>
+                  <div class="mb-2"><input type="file" id="headerInput" class="form-control" accept="image/*"></div>
+                  <div class="mb-2"><input type="file" id="footerInput" class="form-control" accept="image/*"></div>
+                  <div class="mb-2"><input type="file" id="excelInput" class="form-control" accept=".xls,.xlsx"></div>
+                  <div id="invoiceSelection" class="mb-2 hidden">
+                    <select id="invoiceSelect" class="form-select" multiple size="8"></select>
+                  </div>
+                  <button type="button" id="generateBtn" class="btn btn-primary w-100">Generate Labels</button>
+                </form>
+                <div id="alertPlaceholder" class="mt-3"></div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Manual Input Card -->
+          <div class="col-12">
+            <div class="card shadow-sm">
+              <div class="card-body p-4">
+                <h2 class="h5 mb-3">Manual Label Generator</h2>
+                <div class="mb-3 row">
+                  <label class="col-sm-4 col-form-label">Paper Size</label>
+                  <div class="col-sm-8">
+                    <select id="manPresetSize" class="form-select">
+                      <option value="101.6,152.4,mm">4×6 in</option>
+                      <option value="152.4,101.6,mm">6×4 in</option>
+                      <option value="210,297,mm">A4</option>
+                      <option value="216,279,mm">Letter</option>
+                      <option value="custom">Custom</option>
+                    </select>
+                  </div>
+                </div>
+                <div id="manCustomSizeFields" class="mb-3 row d-none">
+                  <div class="col-sm-4"><input type="number" id="manPaperWidth" class="form-control" placeholder="Width"></div>
+                  <div class="col-sm-4"><input type="number" id="manPaperHeight" class="form-control" placeholder="Height"></div>
+                  <div class="col-sm-4">
+                    <select id="manPaperUnit" class="form-select">
+                      <option value="mm" selected>mm</option>
+                      <option value="in">in</option>
+                      <option value="pt">pt</option>
+                    </select>
+                  </div>
+                </div>
+                <form id="manualForm">
+                  <div class="mb-2"><input type="text" id="manInvoice" class="form-control" placeholder="Invoice #"></div>
+                  <div class="mb-2"><input type="text" id="manFirstName" class="form-control" placeholder="First Name"></div>
+                  <div class="mb-2"><input type="text" id="manLastName" class="form-control" placeholder="Last Name"></div>
+                  <div class="mb-2"><input type="tel" id="manPhone" class="form-control" placeholder="Phone"></div>
+                  <div class="mb-2"><textarea id="manAddress" class="form-control" rows="2" placeholder="Address"></textarea></div>
+                  <div class="mb-2"><input type="number" id="manTotal" class="form-control" placeholder="Total Amount"></div>
+                  <div class="mb-2"><textarea id="manItems" class="form-control" rows="3" placeholder="Items (one per line)"></textarea></div>
+                  <button type="button" id="generateManualBtn" class="btn btn-secondary w-100">Generate Manual Label</button>
+                </form>
+              </div>
             </div>
           </div>
         </div>
@@ -180,211 +152,108 @@
     </div>
   </div>
 
-  <!-- Bootstrap Bundle JS -->
+  <!-- Bootstrap JS -->
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
   <script>
     const { jsPDF } = window.jspdf;
-    let parsedRows = [], invoiceList = [];
-    let customFontName = null, customFontData = null;
+    let parsedRows = [], invoiceList = [], customFontName, customFontData;
 
-    // Helpers
-    function readFileAsDataURL(file) {
-      return new Promise(res => {
-        const rd = new FileReader(); rd.onload = ()=>res(rd.result);
-        rd.readAsDataURL(file);
-      });
-    }
-    function readFileAsArrayBuffer(file) {
-      return new Promise(res => {
-        const rd = new FileReader(); rd.onload = ()=>res(rd.result);
-        rd.readAsArrayBuffer(file);
-      });
-    }
-    function titleCase(s) {
-      return s.toLowerCase().split(' ')
-        .map(w=>w.charAt(0).toUpperCase()+w.slice(1))
-        .join(' ');
-    }
+    const readURL = file => new Promise(res => { const r=new FileReader(); r.onload=()=>res(r.result); r.readAsDataURL(file); });
+    const readBuffer = file => new Promise(res => { const r=new FileReader(); r.onload=()=>res(r.result); r.readAsArrayBuffer(file); });
+    const titleCase = s => s.toLowerCase().split(' ').map(w=>w.charAt(0).toUpperCase()+w.slice(1)).join(' ');
 
-    // Toggle custom size fields
-    document.getElementById('presetSize').addEventListener('change', e => {
-      document.getElementById('customSizeFields')
-        .classList.toggle('d-none', e.target.value !== 'custom');
-    });
-
-    const alertPlaceholder = document.getElementById('alertPlaceholder');
-    function showAlert(msg, type='danger') {
-      const div = document.createElement('div');
-      div.innerHTML = `
-        <div class="alert alert-${type} alert-dismissible" role="alert">
-          ${msg}
-          <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-        </div>`;
-      alertPlaceholder.append(div);
-    }
-
-    // Font upload
-    document.getElementById('fontInput').addEventListener('change', async e => {
-      const file = e.target.files[0];
-      if (!file) return;
-      const dataUrl = await readFileAsDataURL(file);
-      customFontName = file.name;
-      customFontData = dataUrl.split(',')[1];
-    });
-
-    // Parse Excel
-    document.getElementById('excelInput').addEventListener('change', async e => {
-      const file = e.target.files[0];
-      if (!file) return;
-      try {
-        const buff = await readFileAsArrayBuffer(file);
-        const wb   = XLSX.read(buff, { type: 'array' });
-        let last = {};
-        parsedRows = XLSX.utils.sheet_to_json(
-          wb.Sheets[wb.SheetNames[0]],
-          { defval: '' }
-        ).map(r => {
-          ['Invoice','First Name','Last Name','Phone','Address','Order Total Amount']
-            .forEach(k => r[k] = r[k] || last[k] || '');
-          last = { ...r };
-          return r;
-        });
-        invoiceList = [...new Set(
-          parsedRows.map(r => String(r['Invoice']).trim())
-        )].sort();
-
-        const sel = document.getElementById('invoiceSelect');
-        sel.innerHTML = '';
-        invoiceList.forEach(i => sel.append(new Option(i, i)));
-        document.getElementById('invoiceSelection').classList.remove('hidden');
-      } catch(err) {
-        showAlert('Error parsing Excel: ' + err.message);
-      }
-    });
-
-    // Generate Labels
-    document.getElementById('generateBtn').addEventListener('click', async () => {
-      alertPlaceholder.innerHTML = '';
-      const headerUrl = await readFileAsDataURL(
-        document.getElementById('headerInput').files[0]
-      );
-      const footerUrl = await readFileAsDataURL(
-        document.getElementById('footerInput').files[0]
-      );
-      if (!headerUrl || !footerUrl)
-        return showAlert('Select both header and footer.');
-      if (!parsedRows.length)
-        return showAlert('Upload and parse Excel first.');
-
-      // Paper size
-      let w, h, unit;
-      const preset = document.getElementById('presetSize').value;
-      if (preset === 'custom') {
-        w = +document.getElementById('paperWidth').value;
-        h = +document.getElementById('paperHeight').value;
-        unit = document.getElementById('paperUnit').value;
-        if (unit === 'in') { w *= 25.4; h *= 25.4; unit = 'mm'; }
-        if (unit === 'pt') { w *= 0.352778; h *= 0.352778; unit = 'mm'; }
-      } else {
-        [w, h, unit] = preset.split(',');
-        w = +w; h = +h;
-      }
-
-      const zip = new JSZip();
-      const opts = Array.from(
-        document.getElementById('invoiceSelect').selectedOptions
-      ).map(o => o.value);
-      const targets = opts.length ? opts : invoiceList;
-
-      for (const inv of targets) {
-        const group = parsedRows.filter(
-          r => String(r['Invoice']).trim() === inv
-        );
-        if (!group.length) continue;
-
-        const doc = new jsPDF({ unit, format: [w, h] });
-        doc.setFontSize(10);
-
-        // Custom font
-        if (customFontName && customFontData) {
-          doc.addFileToVFS(customFontName, customFontData);
-          doc.addFont(customFontName, 'CustomFont', 'normal');
-          doc.setFont('CustomFont', 'normal');
+    async function checkUnlock(code){ const resp=await fetch('https://raw.githubusercontent.com/nasimulhasan/testlabel/main/keys.json'); const { validCodes }=await resp.json(); return validCodes.includes(code); }
+    document.getElementById('unlockBtn').addEventListener('click', async ()=>{
+      const code=document.getElementById('unlockInput').value.trim(); const alertContainer=document.getElementById('unlockAlert'); alertContainer.innerHTML='';
+      try{
+        if(await checkUnlock(code)){
+          document.getElementById('unlockPage').classList.add('hidden'); document.getElementById('generatorPage').classList.remove('hidden');
+        } else {
+          alertContainer.innerHTML='<div class="alert alert-warning">Invalid code</div>';
         }
-
-        // Header image
-        const hp = doc.getImageProperties(headerUrl);
-        const hh = w * (hp.height / hp.width);
-        doc.addImage(headerUrl, 'PNG', 0, 0, w, hh);
-
-        // Footer image
-        const fp = doc.getImageProperties(footerUrl);
-        const fh = w * (fp.height / fp.width);
-        doc.addImage(footerUrl, 'PNG', 0, h - fh, w, fh);
-
-        // Two‑column text
-        let y = hh + 11;
-        const labelX = 10;
-        const valueX = labelX + 22;
-
-        // Invoice #
-        doc.text('Invoice #:', labelX, y);
-        doc.text(inv,           valueX, y);
-        y += 7;
-
-        // Name
-        const name = titleCase(
-          group[0]['First Name'] + ' ' + group[0]['Last Name']
-        );
-        doc.text('Name:',     labelX, y);
-        doc.text(name,        valueX, y);
-        y += 7;
-
-        // Phone
-        let num = String(group[0]['Phone']).replace(/\D/g, '');
-        if (num.startsWith('880')) num = num.slice(3);
-        else if (num.startsWith('0')) num = num.slice(1);
-        if (num.length > 10) num = num.slice(-10);
-        doc.text('Phone:',    labelX, y);
-        doc.text(num,         valueX, y);
-        y += 7;
-
-        // Address
-        const addrLines = doc.splitTextToSize(
-          titleCase(group[0]['Address']),
-          w - valueX - 10
-        );
-        doc.text('Address:',   labelX, y);
-        doc.text(addrLines,    valueX, y);
-        y += addrLines.length * 7;
-
-        // Total
-        const notes = group.map(r => r['NOTE'] || '').join(' ').toLowerCase();
-        const total = notes.includes('paid')
-          ? '0'
-          : String(Math.round(group[0]['Order Total Amount']));
-        doc.text('Total:',    labelX, y);
-        doc.text(`Tk ${total}`, valueX, y);
-        y += 7;
-
-        // Items
-        doc.text('Items:',    labelX, y);
-        y += 7;
-        group.forEach(r => {
-          const item = r['Items'] ? titleCase(r['Items']) : '';
-          const qty  = r['Quantity'] ? ` (${r['Quantity']})` : '';
-          if (item) {
-            doc.text(`- ${item}${qty}`, labelX + 10, y);
-            y += 7;
-          }
-        });
-
-        // Add PDF to ZIP
-        zip.file(`${inv}.pdf`, doc.output('blob'));
+      }catch{
+        alertContainer.innerHTML='<div class="alert alert-danger">Error verifying code</div>';
       }
+    });
 
-      const blob = await zip.generateAsync({ type: 'blob' });
-      saveAs(blob, 'shipping_labels.zip');
+    // Toggle size fields
+    document.getElementById('presetSize').addEventListener('change', e=> document.getElementById('customSizeFields').classList.toggle('d-none', e.target.value!=='custom'));
+    document.getElementById('manPresetSize').addEventListener('change', e=> document.getElementById('manCustomSizeFields').classList.toggle('d-none', e.target.value!=='custom'));
+
+    // Excel inputs
+    document.getElementById('fontInput').addEventListener('change', async e=>{ const f=e.target.files[0]; if(!f)return; const url=await readURL(f); customFontName=f.name; customFontData=url.split(',')[1]; });
+    document.getElementById('excelInput').addEventListener('change', async e=>{
+      const f=e.target.files[0]; if(!f)return;
+      try{
+        const arr=await readBuffer(f), wb=XLSX.read(arr,{type:'array'});
+        let last={}; parsedRows=XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]],{defval:''})
+          .map(r=>{ ['Invoice','First Name','Last Name','Phone','Address','Order Total Amount'].forEach(k=>r[k]=r[k]||last[k]||''); last={...r}; return r; });
+        invoiceList=[...new Set(parsedRows.map(r=>r['Invoice'].trim()))];
+        const sel=document.getElementById('invoiceSelect'); sel.innerHTML=''; invoiceList.forEach(i=>sel.append(new Option(i,i)));
+        document.getElementById('invoiceSelection').classList.remove('hidden');
+      }catch{ showAlert('Error parsing Excel','danger'); }
+    });
+    function showAlert(msg,type='danger'){ const d=document.createElement('div'); d.innerHTML=`<div class="alert alert-${type} alert-dismissible" role="alert">${msg}<button type="button" class="btn-close" data-bs-dismiss="alert"></button></div>`; document.getElementById('alertPlaceholder').append(d); }
+
+    // Excel generator
+    document.getElementById('generateBtn').addEventListener('click', async ()=>{
+      const headerF=document.getElementById('headerInput').files[0], footerF=document.getElementById('footerInput').files[0];
+      if(!headerF||!footerF) return showAlert('Select header and footer'); if(!parsedRows.length) return showAlert('Upload and parse Excel first');
+      const header=await readURL(headerF), footer=await readURL(footerF);
+      let w,h,unit; const pr=document.getElementById('presetSize').value;
+      if(pr==='custom'){ w=+document.getElementById('paperWidth').value; h=+document.getElementById('paperHeight').value; unit=document.getElementById('paperUnit').value; if(unit==='in'){w*=25.4;h*=25.4;unit='mm';} if(unit==='pt'){w*=0.352778;h*=0.352778;unit='mm';}} else {[w,h,unit]=pr.split(','); w=+w; h=+h;}
+      const zip=new JSZip(), opts=Array.from(document.getElementById('invoiceSelect').selectedOptions).map(o=>o.value), targets=opts.length?opts:invoiceList;
+      for(const inv of targets){ const group=parsedRows.filter(r=>r['Invoice'].trim()===inv); if(!group.length) continue;
+        const doc=new jsPDF({ unit, format:[w,h] });
+        if(customFontName&&customFontData){ doc.addFileToVFS(customFontName,customFontData); doc.addFont(customFontName,customFontName,'normal'); doc.setFont(customFontName,'normal'); } else doc.setFont('helvetica','normal'); doc.setFontSize(10);
+        const hp=doc.getImageProperties(header), hh=w*(hp.height/hp.width); doc.addImage(header,'PNG',0,0,w,hh);
+        const fp=doc.getImageProperties(footer), fh=w*(fp.height/fp.width); doc.addImage(footer,'PNG',0,h-fh,w,fh);
+        let y=hh+11,labelX=10,valueX=labelX+18;
+        doc.text('Invoice #:',labelX,y); doc.text(inv,valueX,y); y+=7;
+        const name=titleCase(group[0]['First Name']+' '+group[0]['Last Name']); doc.text('Name:',labelX,y); doc.text(name,valueX,y); y+=7;
+        let num=group[0]['Phone'].replace(/\D/g,''); if(num.startsWith('880')) num=num.slice(3); else if(num.startsWith('0')) num=num.slice(1); if(num.length>10) num=num.slice(-10);
+        doc.text('Phone:',labelX,y); doc.text(num,valueX,y); y+=7;
+        const lines=doc.splitTextToSize(titleCase(group[0]['Address']),w-valueX-10);
+        doc.text('Address:',labelX,y); doc.text(lines,valueX,y); y+=lines.length*7;
+        const notes=group.map(r=>r['NOTE']||'').join(' ').toLowerCase(), tot=notes.includes('paid')?'0':String(Math.round(group[0]['Order Total Amount']));
+        doc.text('Total:',labelX,y); doc.text(`Tk ${tot}`,valueX,y); y+=7;
+        doc.text('Items:',labelX,y); y+=7; group.forEach(r=>{ const it=r['Items']?titleCase(r['Items']):'', q=r['Quantity']?` (${r['Quantity']})`:''; if(it){ doc.text(`- ${it}${q}`,labelX+10,y); y+=7;} });
+        zip.file(`${inv}.pdf`, doc.output('blob')); }
+      const blob=await zip.generateAsync({ type:'blob' }); saveAs(blob,'shipping_labels.zip');
+    });
+
+    // Manual generator logic
+    document.getElementById('generateManualBtn').addEventListener('click', async ()=>{
+      const inv=document.getElementById('manInvoice').value.trim(); if(!inv) return alert('Enter an invoice #');
+      const group=[{
+        Invoice: inv,
+        'First Name': document.getElementById('manFirstName').value.trim(),
+        'Last Name': document.getElementById('manLastName').value.trim(),
+        Phone: document.getElementById('manPhone').value.trim(),
+        Address: document.getElementById('manAddress').value.trim(),
+        'Order Total Amount': parseFloat(document.getElementById('manTotal').value)||0,
+        Items: document.getElementById('manItems').value.split('\n')
+      }];
+      // reuse paper size and assets
+      const headerF=document.getElementById('headerInput').files[0], footerF=document.getElementById('footerInput').files[0];
+      if(!headerF||!footerF) return alert('Select header and footer');
+      const header=await readURL(headerF), footer=await readURL(footerF);
+      let w,h,unit; const pr=document.getElementById('manPresetSize').value;
+      if(pr==='custom'){ w=+document.getElementById('manPaperWidth').value; h=+document.getElementById('manPaperHeight').value; unit=document.getElementById('manPaperUnit').value; if(unit==='in'){w*=25.4;h*=25.4;unit='mm';} if(unit==='pt'){w*=0.352778;h*=0.352778;unit='mm';}} else {[w,h,unit]=pr.split(','); w=+w; h=+h;}
+      const doc=new jsPDF({ unit, format:[w,h] });
+      if(customFontName&&customFontData){ doc.addFileToVFS(customFontName,customFontData); doc.addFont(customFontName,customFontName,'normal'); doc.setFont(customFontName,'normal'); } else doc.setFont('helvetica','normal'); doc.setFontSize(10);
+      const hp=doc.getImageProperties(header), hh=w*(hp.height/hp.width); doc.addImage(header,'PNG',0,0,w,hh);
+      const fp=doc.getImageProperties(footer), fh=w*(fp.height/fp.width); doc.addImage(footer,'PNG',0,h-fh,w,fh);
+      let y=hh+11,labelX=10,valueX=labelX+18;
+      doc.text('Invoice #:',labelX,y); doc.text(inv,valueX,y); y+=7;
+      const n=titleCase(group[0]['First Name']+' '+group[0]['Last Name']); doc.text('Name:',labelX,y); doc.text(n,valueX,y); y+=7;
+      let num=group[0].Phone.replace(/\D/g,''); if(num.startsWith('880')) num=num.slice(3); else if(num.startsWith('0')) num=num.slice(1); if(num.length>10) num=num.slice(-10);
+      doc.text('Phone:',labelX,y); doc.text(num,valueX,y); y+=7;
+      const lines=doc.splitTextToSize(titleCase(group[0].Address),w-valueX-10);
+      doc.text('Address:',labelX,y); doc.text(lines,valueX,y); y+=lines.length*7;
+      const tot=String(Math.round(group[0]['Order Total Amount'])); doc.text('Total:',labelX,y); doc.text(`Tk ${tot}`,valueX,y); y+=7;
+      doc.text('Items:',labelX,y); y+=7; group[0].Items.forEach(item=>{ if(!item) return; doc.text(`- ${item}`,labelX+10,y); y+=7; });
+      doc.save(`label_${inv}.pdf`);
     });
   </script>
 </body>
