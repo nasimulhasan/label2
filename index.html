@@ -114,83 +114,72 @@
       <div id="generatorPage" class="hidden">
         <div class="row gx-4">
           <!-- Excel Generator -->
-          <div class="col-md-6">
-            <div class="card shadow-sm mb-4">
-              <div class="card-body p-4">
-                <h2 class="h5 mb-3">Excel Label Generator</h2>
+<div class="col-md-6">
+  <div class="card shadow-sm mb-4">
+    <div class="card-body p-4">
+      <h2 class="h5 mb-3">Excel Label Generator</h2>
 
-                <!-- Paper Size Select -->
-                <div class="mb-3 row">
-                  <label class="col-sm-4 col-form-label">Paper Size</label>
-                  <div class="col-sm-8">
-                    <select id="presetSize" class="form-select">
-                      <option value="101.6,152.4,mm">4×6 in</option>
-                      <option value="152.4,101.6,mm">6×4 in</option>
-                      <option value="210,297,mm">A4</option>
-                      <option value="216,279,mm">Letter</option>
-                      <option value="custom">Custom</option>
-                    </select>
-                  </div>
-                </div>
+      <!-- Paper Size Select -->
+      <div class="mb-3 row">
+        <label class="col-sm-4 col-form-label">Paper Size</label>
+        <div class="col-sm-8">
+          <select id="presetSize" class="form-select">
+            <option value="101.6,152.4,mm">4×6 in</option>
+            <option value="152.4,101.6,mm">6×4 in</option>
+            <option value="210,297,mm">A4</option>
+            <option value="216,279,mm">Letter</option>
+            <option value="custom">Custom</option>
+          </select>
+        </div>
+      </div>
 
-                <!-- Custom Size Fields -->
-                <div id="customSizeFields" class="mb-3 row d-none">
-                  <div class="col-sm-4">
-                    <input
-                      type="number"
-                      id="paperWidth"
-                      class="form-control"
-                      placeholder="Width"
-                    />
-                  </div>
-                  <div class="col-sm-4">
-                    <input
-                      type="number"
-                      id="paperHeight"
-                      class="form-control"
-                      placeholder="Height"
-                    />
-                  </div>
-                  <div class="col-sm-4">
-                    <select id="paperUnit" class="form-select">
-                      <option value="mm" selected>mm</option>
-                      <option value="in">in</option>
-                      <option value="pt">pt</option>
-                    </select>
-                  </div>
-                </div>
+      <!-- Custom Size Fields -->
+      <div id="customSizeFields" class="mb-3 row d-none">
+        <div class="col-sm-4">
+          <input type="number" id="paperWidth" class="form-control" placeholder="Width" />
+        </div>
+        <div class="col-sm-4">
+          <input type="number" id="paperHeight" class="form-control" placeholder="Height" />
+        </div>
+        <div class="col-sm-4">
+          <select id="paperUnit" class="form-select">
+            <option value="mm" selected>mm</option>
+            <option value="in">in</option>
+            <option value="pt">pt</option>
+          </select>
+        </div>
+      </div>
 
-                <!-- Excel Upload & Invoice Select -->
-                <form id="labelForm">
-                  <div class="mb-2">
-                    <label class="form-label">Excel File</label>
-                    <input
-                      type="file"
-                      id="excelInput"
-                      class="form-control"
-                      accept=".xls,.xlsx"
-                    />
-                  </div>
-                  <div id="invoiceSelection" class="mb-2 hidden">
-                    <label class="form-label">Select Invoices</label>
-                    <select
-                      id="invoiceSelect"
-                      class="form-select"
-                      multiple
-                      size="8"
-                    ></select>
-                  </div>
-                  <button
-                    type="button"
-                    id="generateBtn"
-                    class="btn btn-primary w-100"
-                  >
-                    Generate Labels
-                  </button>
-                </form>
-              </div>
-            </div>
-          </div>
+      <!-- Uploads + Excel + Invoice Select -->
+      <form id="labelForm">
+        <div class="mb-2">
+          <label class="form-label">Upload Font (optional)</label>
+          <input type="file" id="fontInput" class="form-control" accept=".ttf,.otf" />
+        </div>
+        <div class="mb-2">
+          <label class="form-label">Header Image</label>
+          <input type="file" id="headerInput" class="form-control" accept="image/*" />
+        </div>
+        <div class="mb-2">
+          <label class="form-label">Footer Image</label>
+          <input type="file" id="footerInput" class="form-control" accept="image/*" />
+        </div>
+        <div class="mb-2">
+          <label class="form-label">Excel File</label>
+          <input type="file" id="excelInput" class="form-control" accept=".xls,.xlsx" />
+        </div>
+        <div id="invoiceSelection" class="mb-2 hidden">
+          <label class="form-label">Select Invoices</label>
+          <select id="invoiceSelect" class="form-select" multiple size="8"></select>
+        </div>
+        <button type="button" id="generateBtn" class="btn btn-primary w-100">
+          Generate Labels
+        </button>
+      </form>
+    </div>
+  </div>
+</div>
+
 
           <!-- Manual Generator -->
           <div class="col-md-6">
