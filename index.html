@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
   <title>Shipping Label Generator</title>
   <!-- Bootstrap CSS -->
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
@@ -19,18 +19,13 @@
   <style>
     body { padding-top: 4rem; background: #f8f9fa; }
     .hidden { display: none !important; }
-    /* ensure two columns fit exactly side by side */
     @media (min-width: 768px) {
-      .col-md-6 {
-        flex: 0 0 50%;
-        max-width: 50%;
-      }
+      .col-md-6 { flex:0 0 50%; max-width:50%; }
     }
   </style>
 </head>
 <body>
   <div class="container d-flex justify-content-center">
-    <!-- 80% width wrapper -->
     <div style="width:80%; max-width:800px;">
 
       <!-- Unlock Page -->
@@ -39,7 +34,7 @@
           <h1 class="card-title mb-4">Enter Unlock Code</h1>
           <input type="text" id="unlockInput" class="form-control mb-3" placeholder="Enter unlock code">
           <button id="unlockBtn" class="btn btn-primary w-100 mb-3">Unlock</button>
-          <div id="unlockAlert" class="mt-2"></div>
+          <div id="unlockAlert"></div>
           <div class="accordion mt-4" id="unlockInfoAccordion">
             <div class="accordion-item">
               <h2 class="accordion-header" id="headingUnlockInfo">
@@ -53,8 +48,8 @@
                    aria-labelledby="headingUnlockInfo" data-bs-parent="#unlockInfoAccordion">
                 <div class="accordion-body text-start">
                   <p>
-                    To obtain an unlock code, please visit our pricing page and complete the purchase form.
-                    Once payment is confirmed, your code will be emailed to you within minutes.
+                    To obtain an unlock code, visit our pricing page and complete the purchase form.
+                    Once payment is confirmed, your code will arrive via email within minutes.
                   </p>
                 </div>
               </div>
@@ -63,10 +58,11 @@
         </div>
       </div>
 
-      <!-- Generator Page (hidden until unlocked) -->
+      <!-- Generators (hidden until unlocked) -->
       <div id="generatorPage" class="hidden">
         <div class="row gx-4">
-          <!-- Excel Label Generator -->
+
+          <!-- Excel Generator -->
           <div class="col-md-6">
             <div class="card shadow-sm mb-4">
               <div class="card-body p-4">
@@ -99,23 +95,23 @@
 
                 <form id="labelForm">
                   <div class="mb-2">
-                    <label for="fontInput" class="form-label">Upload Font (optional)</label>
+                    <label class="form-label">Upload Font (optional)</label>
                     <input type="file" id="fontInput" class="form-control" accept=".ttf,.otf">
                   </div>
                   <div class="mb-2">
-                    <label for="headerInput" class="form-label">Header Image</label>
+                    <label class="form-label">Header Image</label>
                     <input type="file" id="headerInput" class="form-control" accept="image/*">
                   </div>
                   <div class="mb-2">
-                    <label for="footerInput" class="form-label">Footer Image</label>
+                    <label class="form-label">Footer Image</label>
                     <input type="file" id="footerInput" class="form-control" accept="image/*">
                   </div>
                   <div class="mb-2">
-                    <label for="excelInput" class="form-label">Excel File</label>
+                    <label class="form-label">Excel File</label>
                     <input type="file" id="excelInput" class="form-control" accept=".xls,.xlsx">
                   </div>
                   <div id="invoiceSelection" class="mb-2 hidden">
-                    <label for="invoiceSelect" class="form-label">Select Invoices</label>
+                    <label class="form-label">Select Invoices</label>
                     <select id="invoiceSelect" class="form-select" multiple size="8"></select>
                   </div>
                   <button type="button" id="generateBtn" class="btn btn-primary w-100">Generate Labels</button>
@@ -125,21 +121,21 @@
             </div>
           </div>
 
-          <!-- Manual Label Generator -->
+          <!-- Manual Generator -->
           <div class="col-md-6">
             <div class="card shadow-sm mb-4">
               <div class="card-body p-4">
                 <h2 class="h5 mb-3">Manual Label Generator</h2>
                 <div class="mb-2">
-                  <label for="manFontInput" class="form-label">Upload Font (optional)</label>
+                  <label class="form-label">Upload Font (optional)</label>
                   <input type="file" id="manFontInput" class="form-control" accept=".ttf,.otf">
                 </div>
                 <div class="mb-2">
-                  <label for="manHeaderInput" class="form-label">Header Image</label>
+                  <label class="form-label">Header Image</label>
                   <input type="file" id="manHeaderInput" class="form-control" accept="image/*">
                 </div>
                 <div class="mb-2">
-                  <label for="manFooterInput" class="form-label">Footer Image</label>
+                  <label class="form-label">Footer Image</label>
                   <input type="file" id="manFooterInput" class="form-control" accept="image/*">
                 </div>
 
@@ -168,10 +164,10 @@
                 </div>
 
                 <form id="manualForm">
-                  <div class="mb-2"><input type="text" id="manInvoice" class="form-control" placeholder="Invoice #"></div>
+                  <div class="mb-2"><input type="text" id="manInvoice"   class="form-control" placeholder="Invoice #"></div>
                   <div class="mb-2"><input type="text" id="manFirstName" class="form-control" placeholder="First Name"></div>
-                  <div class="mb-2"><input type="text" id="manLastName" class="form-control" placeholder="Last Name"></div>
-                  <div class="mb-2"><input type="tel"  id="manPhone" class="form-control" placeholder="Phone"></div>
+                  <div class="mb-2"><input type="text" id="manLastName"  class="form-control" placeholder="Last Name"></div>
+                  <div class="mb-2"><input type="tel"  id="manPhone"     class="form-control" placeholder="Phone"></div>
                   <div class="mb-2"><textarea id="manAddress" class="form-control" rows="2" placeholder="Address"></textarea></div>
                   <div class="mb-2"><input type="number" id="manTotal" class="form-control" placeholder="Total Amount"></div>
                   <div class="mb-2"><textarea id="manItems" class="form-control" rows="3" placeholder="Items (one per line)"></textarea></div>
@@ -180,6 +176,7 @@
               </div>
             </div>
           </div>
+
         </div>
       </div>
 
@@ -190,54 +187,82 @@
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
   <script>
     const { jsPDF } = window.jspdf;
-    let parsedRows = [], invoiceList = [], customFontName, customFontData;
+    let parsedRows = [], invoiceList = [], customFontName='', customFontData='';
 
-    const readURL = file => new Promise(r => { const fr=new FileReader(); fr.onload=()=>r(fr.result); fr.readAsDataURL(file); });
-    const readBuffer = file => new Promise(r => { const fr=new FileReader(); fr.onload=()=>r(fr.result); fr.readAsArrayBuffer(file); });
-    const titleCase = s => s.toLowerCase().split(' ').map(w=>w.charAt(0).toUpperCase()+w.slice(1)).join(' ');
+    const readURL = file => new Promise(r => {
+      const fr = new FileReader();
+      fr.onload = () => r(fr.result);
+      fr.readAsDataURL(file);
+    });
+    const readBuffer = file => new Promise(r => {
+      const fr = new FileReader();
+      fr.onload = () => r(fr.result);
+      fr.readAsArrayBuffer(file);
+    });
+    const titleCase = s =>
+      s.toLowerCase().split(' ')
+       .map(w=>w.charAt(0).toUpperCase()+w.slice(1))
+       .join(' ');
 
+    // Unlock handler
     async function checkUnlock(code){
-      const resp = await fetch('https://raw.githubusercontent.com/nasimulhasan/testlabel/main/keys.json');
-      if(!resp.ok) throw new Error();
-      const { validCodes } = await resp.json();
+      const r = await fetch('https://raw.githubusercontent.com/nasimulhasan/testlabel/main/keys.json');
+      const { validCodes } = await r.json();
       return validCodes.includes(code);
     }
-    document.getElementById('unlockBtn').onclick = async ()=>{
+    document.getElementById('unlockBtn').onclick = async () => {
       const code = document.getElementById('unlockInput').value.trim();
-      const a = document.getElementById('unlockAlert');
-      a.innerHTML = '';
-      try {
-        if (await checkUnlock(code)) {
-          a.innerHTML = '<div class="alert alert-success">Unlocked!</div>';
-          document.getElementById('unlockPage').classList.add('hidden');
-          document.getElementById('generatorPage').classList.remove('hidden');
-        } else {
-          a.innerHTML = '<div class="alert alert-warning">Invalid code</div>';
-        }
-      } catch {
-        a.innerHTML = '<div class="alert alert-danger">Error verifying code</div>';
+      const alert = document.getElementById('unlockAlert');
+      alert.innerHTML = '';
+      if (await checkUnlock(code)) {
+        alert.innerHTML = '<div class="alert alert-success">Unlocked!</div>';
+        document.getElementById('unlockPage').classList.add('hidden');
+        document.getElementById('generatorPage').classList.remove('hidden');
+      } else {
+        alert.innerHTML = '<div class="alert alert-warning">Invalid code</div>';
       }
     };
 
-    document.getElementById('presetSize').addEventListener('change', e =>
-      document.getElementById('customSizeFields').classList.toggle('d-none', e.target.value !== 'custom')
+    // Paper‐size toggles
+    document.getElementById('presetSize').addEventListener('change', e=>
+      document.getElementById('customSizeFields')
+        .classList.toggle('d-none', e.target.value!=='custom')
     );
-    document.getElementById('manPresetSize').addEventListener('change', e =>
-      document.getElementById('manCustomSizeFields').classList.toggle('d-none', e.target.value !== 'custom')
+    document.getElementById('manPresetSize').addEventListener('change', e=>
+      document.getElementById('manCustomSizeFields')
+        .classList.toggle('d-none', e.target.value!=='custom')
     );
 
-    document.getElementById('manFontInput').addEventListener('change', async e => {
+    // Excel parsing
+    document.getElementById('excelInput').addEventListener('change', async e => {
+      const f = e.target.files[0];
+      if (!f) return;
+      const buff = await readBuffer(f);
+      const wb = XLSX.read(buff, {type:'array'});
+      let last = {};
+      parsedRows = XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]], {defval:''})
+        .map(r => {
+          ['Invoice','First Name','Last Name','Phone','Address','Order Total Amount']
+            .forEach(k => r[k] = r[k]|| last[k] || '');
+          last = {...r};
+          return r;
+        });
+      invoiceList = [...new Set(parsedRows.map(r=>r.Invoice.trim()))].sort();
+      const sel = document.getElementById('invoiceSelect');
+      sel.innerHTML = '';
+      invoiceList.forEach(inv => sel.append(new Option(inv, inv)));
+      document.getElementById('invoiceSelection').classList.remove('hidden');
+    });
+
+    // Excel generate
+    document.getElementById('fontInput').addEventListener('change', async e => {
       const f = e.target.files[0]; if (!f) return;
       const url = await readURL(f);
       customFontName = f.name;
       customFontData = url.split(',')[1];
     });
-
-    // (Excel generator wiring omitted for brevity)
-
-    document.getElementById('generateManualBtn').onclick = async () => {
-      // ... (manual label generation code unchanged) ...
-    };
-  </script>
-</body>
-</html>
+    document.getElementById('generateBtn').onclick = async () => {
+      const headerF = document.getElementById('headerInput').files[0];
+      const footerF = document.getElementById('footerInput').files[0];
+      if (!headerF||!footerF) {
+        return alert('
