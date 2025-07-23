@@ -269,7 +269,48 @@
   <!-- Main generator logic -->
   <script>
     document.addEventListener('DOMContentLoaded', () => {
-      // … your existing SheetJS/jsPDF/JSZip wiring goes here …
+// show/hide custom‑size inputs (optional)
+function wireCustomToggle(selectId, fieldsId) {
+  const sel = document.getElementById(selectId),
+        fld = document.getElementById(fieldsId);
+  sel.addEventListener('change', () => {
+    sel.value === 'custom' ? fld.classList.remove('d-none') : fld.classList.add('d-none');
+  });
+}
+wireCustomToggle('presetSize', 'customSizeFields');
+
+// invoice list populator
+const excelInput       = document.getElementById('excelInput');
+const invoiceSelect    = document.getElementById('invoiceSelect');
+const invoiceSelection = document.getElementById('invoiceSelection');
+
+excelInput.addEventListener('change', async (e) => {
+  const file = e.target.files[0];
+  if (!file) return;
+
+  try {
+    const data = await file.arrayBuffer();
+    const wb   = XLSX.read(data, { type: 'array' });
+    const sheet= wb.Sheets[wb.SheetNames[0]];
+    const rows = XLSX.utils.sheet_to_json(sheet, { defval: '' });
+
+    invoiceSelect.innerHTML = '';
+    rows.forEach(row => {
+      const inv = row['Invoice'] ?? row[Object.keys(row)[0]];
+      if (inv) {
+        const opt = document.createElement('option');
+        opt.value = inv;
+        opt.textContent = inv;
+        invoiceSelect.append(opt);
+      }
+    });
+
+    invoiceSelection.classList.remove('hidden');
+  } catch (err) {
+    console.error(err);
+    alert('Failed to parse Excel file');
+  }
+});
     });
   </script>
 </body>
