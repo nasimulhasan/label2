@@ -44,19 +44,45 @@
                   How to get Unlock Code?
                 </button>
               </h2>
-              <div id="collapseUnlockInfo" class="accordion-collapse collapse"
-                   aria-labelledby="headingUnlockInfo" data-bs-parent="#unlockInfoAccordion">
-                <div class="accordion-body text-start">
-                  <p>
-                    To obtain an unlock code, visit our pricing page and complete the purchase form.
-                    Once payment is confirmed, your code will arrive via email within minutes.
-                  </p>
-                </div>
-              </div>
-            </div>
+             <div class="accordion mt-4" id="unlockInfoAccordion">
+  <div class="accordion-item">
+    <h2 class="accordion-header" id="headingUnlockInfo">
+      <button class="accordion-button collapsed" type="button"
+              data-bs-toggle="collapse" data-bs-target="#collapseUnlockInfo"
+              aria-expanded="false" aria-controls="collapseUnlockInfo">
+        How to get Unlock Code?
+      </button>
+    </h2>
+    <div id="collapseUnlockInfo" class="accordion-collapse collapse"
+         aria-labelledby="headingUnlockInfo" data-bs-parent="#unlockInfoAccordion">
+      <div class="accordion-body">
+        <div class="row">
+          <!-- Left column: your explanatory text -->
+          <div class="col-md-6">
+            <p>
+              To obtain an unlock code, visit our pricing page and complete the purchase form.
+              Once payment is confirmed, your code will arrive via email within minutes.
+            </p>
+            <ul>
+              <li>Step 1: Go to pricing page</li>
+              <li>Step 2: Fill out form</li>
+              <li>Step 3: Check your inbox</li>
+            </ul>
+          </div>
+          <!-- Right column: fixed-size image -->
+          <div class="col-md-6 d-flex justify-content-center align-items-center">
+            <img
+              src="https://raw.githubusercontent.com/you/yourrepo/main/path/to/image.png"
+              alt="Unlock Code Example"
+              style="max-width:100%; height:200px; object-fit:contain;"
+            />
           </div>
         </div>
       </div>
+    </div>
+  </div>
+</div>
+
 
       <!-- Generators (hidden until unlocked) -->
       <div id="generatorPage" class="hidden">
