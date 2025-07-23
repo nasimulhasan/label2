@@ -32,52 +32,67 @@
           </button>
 
           <!-- Instructions Modal -->
-          <div class="modal fade" id="instructionsModal" tabindex="-1" aria-labelledby="instructionsModalLabel" aria-hidden="true">
-            <div class="modal-dialog modal-lg">
-              <div class="modal-content">
-                <div class="modal-header">
-                  <h5 class="modal-title" id="instructionsModalLabel">ব্যবহার নির্দেশনা</h5>
-                  <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                <div class="modal-body">
-                  <ol class="ps-3">
-                    <li class="mb-2"><strong>PDF সাইজ:</strong>
-                      <ul class="ps-3 mb-0">
-                        <li>ডিফল্ট: 152.4 mm × 101.6 mm (6″ × 4″)।</li>
-                      </ul>
-                    </li>
-                    <li class="mb-2"><strong>ইমেজ সাইজ:</strong>
-                      <ul class="ps-3 mb-0">
-                        <li>হেডার: ≥900×300px</li>
-                        <li>ফুটার: ≥900×450px</li>
-                      </ul>
-                    </li>
-                    <li class="mb-2"><strong>এক্সেল:</strong>
-                      <ul class="ps-3 mb-0">
-                        <li>এক্সটেনশন: .xls, .xlsx</li>
-                        <li>হেডার: Invoice, First Name, Last Name, Phone, Address, Order Total Amount</li>
-                      </ul>
-                    </li>
-                    <li class="mb-2"><strong>ফোন:</strong>
-                      <ul class="ps-3 mb-0">
-                        <li>শুধুমাত্র ১১ সংখ্যার 0xxxxxxxxxx ফরম্যাট</li>
-                      </ul>
-                    </li>
-                    <li class="mb-2"><strong>ইনভয়েস:</strong>
-                      <ul class="ps-3 mb-0">
-                        <li>কন্ট্রোল/কমান্ড দিয়ে একাধিক নির্বাচন</li>
-                      </ul>
-                    </li>
-                    <li class="mb-2"><strong>ডাউনলোড:</strong>
-                      <ul class="ps-3 mb-0">
-                        <li>shipping_labels.zip</li>
-                      </ul>
-                    </li>
-                  </ol>
-                </div>
-              </div>
-            </div>
-          </div>
+          <div class="modal-body">
+  <ol class="ps-3">
+    <li class="mb-3">
+      <strong>PDF সাইজ:</strong>
+      <ul class="ps-3 mb-0">
+        <li>
+          ডিফল্ট:
+          <code class="text-primary">152.4&nbsp;mm × 101.6&nbsp;mm</code>
+          (<span class="text-secondary">6″ × 4″</span>)
+        </li>
+      </ul>
+    </li>
+    <li class="mb-3">
+      <strong>ইমেজ সাইজ:</strong>
+      <ul class="ps-3 mb-0">
+        <li>হেডার: <code class="text-primary">≥900×300px</code> (JPEG/PNG)</li>
+        <li>ফুটার: <code class="text-primary">≥900×450px</code> (JPEG/PNG)</li>
+        <li class="text-warning">
+          <strong>মহত্বপূর্ণ:</strong>
+          হেডার এবং ফুটার স্বয়ংক্রিয়ভাবে লেবেলের পূর্ণ প্রস্থে প্রসারিত হবে। নিশ্চিত করুন যে
+          <code class="text-primary">paper size</code> অনুযায়ী ছবিগুলো পর্যাপ্ত প্রস্থের এবং সঠিক অনুপাতের।
+        </li>
+      </ul>
+    </li>
+    <li class="mb-3">
+      <strong>এক্সেল:</strong>
+      <ul class="ps-3 mb-0">
+        <li>এক্সটেনশন: <code class="text-primary">.xls</code>, <code class="text-primary">.xlsx</code> &mdash; <a href="EXCEL_TEMPLATE_URL" class="text-decoration-underline" target="_blank">ডাউনলোড এক্সেল টেমপ্লেট</a></li>
+        <li>কলাম: <code class="text-primary">Invoice</code>, <code class="text-primary">First Name</code>, <code class="text-primary">Last Name</code>, <code class="text-primary">Phone</code>, <code class="text-primary">Address</code>, <code class="text-primary">Order Total Amount</code></li>
+      </ul>
+    </li>
+    <li class="mb-3">
+      <strong>ফোন:</strong>
+      <ul class="ps-3 mb-0">
+        <li>শুধুমাত্র ১১ সংখ্যার <code class="text-primary">0xxxxxxxxxx</code> ফরম্যাট</li>
+      </ul>
+    </li>
+    <li class="mb-3">
+      <strong>ইনভয়েস সিলেকশন:</strong>
+      <ul class="ps-3 mb-0">
+        <li>Ctrl (Windows) / Cmd (Mac) দিয়ে একাধিক নির্বাচন</li>
+      </ul>
+    </li>
+    <li class="mb-3">
+      <strong>ডাউনলোড:</strong>
+      <ul class="ps-3 mb-0">
+        <li><code class="text-primary">shipping_labels.zip</code></li>
+      </ul>
+    </li>
+  </ol>
+  <p class="text-info">
+    <strong>ভিডিও নির্দেশিকা:</strong>
+    <a href="YOUTUBE_URL" class="text-decoration-underline" target="_blank">টিউটোরিয়াল দেখুন</a>
+  </p>
+  <p class="text-info">
+    <strong>পরামর্শ:</strong>
+    যদি হেডার/ফুটার বিকৃত হয়, <code class="text-primary">Custom</code> paper size নির্বাচন করে
+    প্রস্থ ও উচ্চতা (mm/in) সমন্বয় করুন।
+  </p>
+</div>
+
 
           <!-- Paper size hybrid UI -->
           <div class="mb-3 row">
