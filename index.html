@@ -14,9 +14,9 @@
     href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css"
     rel="stylesheet"
   />
-  <!-- SheetJS -->
+  <!-- SheetJS (for Excel parsing) -->
   <script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
-  <!-- jsPDF -->
+  <!-- jsPDF UMD bundle -->
   <script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
   <style>
     body {
@@ -53,7 +53,7 @@
           </button>
           <div id="unlockAlert"></div>
 
-          <!-- Accordion -->
+          <!-- Accordion Info -->
           <div class="accordion mt-4" id="unlockInfoAccordion">
             <div class="accordion-item">
               <h2 class="accordion-header" id="headingUnlockInfo">
@@ -87,9 +87,8 @@
               </div>
             </div>
           </div>
-          <!-- End Accordion -->
 
-          <!-- Social Links Card (10px gap) -->
+          <!-- Social Links Card -->
           <div class="card shadow-sm mb-4" style="margin-top: 10px;">
             <div class="card-body text-center">
               <a
@@ -108,10 +107,8 @@
               </a>
             </div>
           </div>
-          <!-- End Social Links -->
         </div>
       </div>
-      <!-- End Unlock Page -->
 
       <!-- Generators (hidden until unlocked) -->
       <div id="generatorPage" class="hidden">
@@ -122,6 +119,7 @@
               <div class="card-body p-4">
                 <h2 class="h5 mb-3">Excel Label Generator</h2>
 
+                <!-- Paper Size Select -->
                 <div class="mb-3 row">
                   <label class="col-sm-4 col-form-label">Paper Size</label>
                   <div class="col-sm-8">
@@ -135,6 +133,7 @@
                   </div>
                 </div>
 
+                <!-- Custom Size Fields -->
                 <div id="customSizeFields" class="mb-3 row d-none">
                   <div class="col-sm-4">
                     <input
@@ -161,6 +160,7 @@
                   </div>
                 </div>
 
+                <!-- Excel Upload & Invoice Select -->
                 <form id="labelForm">
                   <div class="mb-2">
                     <label class="form-label">Excel File</label>
@@ -171,7 +171,6 @@
                       accept=".xls,.xlsx"
                     />
                   </div>
-
                   <div id="invoiceSelection" class="mb-2 hidden">
                     <label class="form-label">Select Invoices</label>
                     <select
@@ -181,7 +180,6 @@
                       size="8"
                     ></select>
                   </div>
-
                   <button
                     type="button"
                     id="generateBtn"
@@ -200,6 +198,7 @@
               <div class="card-body p-4">
                 <h2 class="h5 mb-3">Manual Label Generator</h2>
 
+                <!-- Manual Paper Size -->
                 <div class="mb-3 row">
                   <label class="col-sm-4 col-form-label">Paper Size</label>
                   <div class="col-sm-8">
@@ -213,6 +212,7 @@
                   </div>
                 </div>
 
+                <!-- Manual Custom Size -->
                 <div id="manCustomSizeFields" class="mb-3 row d-none">
                   <div class="col-sm-4">
                     <input
@@ -239,6 +239,7 @@
                   </div>
                 </div>
 
+                <!-- Manual Form Fields -->
                 <form id="manualForm">
                   <div class="mb-2">
                     <input
@@ -315,70 +316,144 @@
 
   <!-- Bootstrap Bundle JS -->
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
   <script>
-    (async () => {
+    document.addEventListener("DOMContentLoaded", () => {
       const { jsPDF } = window.jspdf;
 
-      document.addEventListener("DOMContentLoaded", () => {
-        // Unlock logic (unchanged)…
-        // Custom‑size toggles…
-        // Invoice list populator…
+      // Unlock logic
+      async function checkUnlock(code) {
+        const resp = await fetch(
+          "https://raw.githubusercontent.com/nasimulhasan/testlabel/main/keys.json"
+        );
+        if (!resp.ok) throw new Error();
+        const { validCodes } = await resp.json();
+        return validCodes.includes(code);
+      }
+      document.getElementById("unlockBtn").onclick = async () => {
+        const code = document.getElementById("unlockInput").value.trim();
+        const alert = document.getElementById("unlockAlert");
+        alert.innerHTML = "";
+        try {
+          if (await checkUnlock(code)) {
+            alert.innerHTML =
+              '<div class="alert alert-success">Unlocked!</div>';
+            document.getElementById("unlockPage").classList.add("hidden");
+            document
+              .getElementById("generatorPage")
+              .classList.remove("hidden");
+          } else {
+            alert.innerHTML =
+              '<div class="alert alert-warning">Invalid code</div>';
+          }
+        } catch {
+          alert.innerHTML =
+            '<div class="alert alert-danger">Error verifying code</div>';
+        }
+      };
 
-        // 4. Generate Excel‑based labels
-        document.getElementById("generateBtn").addEventListener("click", () => {
-          const invoiceSelect = document.getElementById("invoiceSelect");
-          const selected = Array.from(invoiceSelect.selectedOptions).map(o => o.value);
-          if (!selected.length) return alert("Select at least one invoice.");
+      // Toggle custom‑size inputs
+      function wireCustomToggle(selectId, fieldsId) {
+        const sel = document.getElementById(selectId),
+              fld = document.getElementById(fieldsId);
+        sel.addEventListener("change", () => {
+          sel.value === "custom"
+            ? fld.classList.remove("d-none")
+            : fld.classList.add("d-none");
+        });
+      }
+      wireCustomToggle("presetSize", "customSizeFields");
+      wireCustomToggle("manPresetSize", "manCustomSizeFields");
 
-          const doc = new jsPDF({
-            unit: "mm",
-            format: document.getElementById("presetSize").value.split(",")  // [w,h,unit]
+      // Invoice list populator
+      const excelInput = document.getElementById("excelInput"),
+            invoiceSelect = document.getElementById("invoiceSelect"),
+            invoiceSelection = document.getElementById("invoiceSelection");
+
+      excelInput.addEventListener("change", async (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+        try {
+          const data = await file.arrayBuffer();
+          const wb = XLSX.read(data, { type: "array" });
+          const sheet = wb.Sheets[wb.SheetNames[0]];
+          const rows = XLSX.utils.sheet_to_json(sheet, { defval: "" });
+
+          invoiceSelect.innerHTML = "";
+          rows.forEach((row) => {
+            const inv = row["Invoice"] ?? row[Object.keys(row)[0]];
+            if (inv !== "") {
+              const opt = document.createElement("option");
+              opt.value = inv;
+              opt.textContent = inv;
+              invoiceSelect.append(opt);
+            }
           });
+          invoiceSelection.classList.remove("hidden");
+        } catch (err) {
+          console.error(err);
+          alert("Failed to parse Excel file");
+        }
+      });
 
-          selected.forEach((inv, i) => {
-            if (i > 0) doc.addPage();
+      // Generate Excel‑based labels
+      document
+        .getElementById("generateBtn")
+        .addEventListener("click", () => {
+          const invs = Array.from(
+            document.getElementById("invoiceSelect").selectedOptions
+          ).map(o => o.value);
+          if (!invs.length) return alert("Select at least one invoice.");
+
+          const fmt = document.getElementById("presetSize").value.split(",");
+          const doc = new jsPDF({
+            unit: fmt[2],
+            format: [+fmt[0], +fmt[1]]
+          });
+          invs.forEach((inv, i) => {
+            if (i) doc.addPage();
             doc.setFontSize(16);
             doc.text(`Invoice: ${inv}`, 10, 20);
-            // TODO: draw header/footer images if needed
           });
-
           doc.save("labels.pdf");
         });
 
-        // 5. Generate Manual label
-        document.getElementById("generateManualBtn").addEventListener("click", () => {
+      // Generate Manual label
+      document
+        .getElementById("generateManualBtn")
+        .addEventListener("click", () => {
           const data = {
-            invoice: document.getElementById("manInvoice").value,
-            name: document.getElementById("manFirstName").value + " " +
-                  document.getElementById("manLastName").value,
+            inv:   document.getElementById("manInvoice").value,
+            name:  document.getElementById("manFirstName").value + " " +
+                   document.getElementById("manLastName").value,
             phone: document.getElementById("manPhone").value,
-            address: document.getElementById("manAddress").value,
+            addr:  document.getElementById("manAddress").value,
             total: document.getElementById("manTotal").value,
             items: document.getElementById("manItems").value
-                       .split("\n").filter(i => i.trim()),
+                     .split("\n")
+                     .filter(l => l.trim()),
           };
-          if (!data.invoice) return alert("Enter an invoice number.");
+          if (!data.inv) return alert("Enter an invoice number.");
 
+          const fmt = document.getElementById("manPresetSize").value.split(",");
           const doc = new jsPDF({
-            unit: "mm",
-            format: document.getElementById("manPresetSize").value.split(",")
+            unit: fmt[2],
+            format: [+fmt[0], +fmt[1]]
           });
           doc.setFontSize(16);
-          doc.text(`Invoice: ${data.invoice}`, 10, 20);
+          doc.text(`Invoice: ${data.inv}`, 10, 20);
           doc.setFontSize(12);
           doc.text(`Name: ${data.name}`, 10, 30);
           doc.text(`Phone: ${data.phone}`, 10, 40);
-          doc.text(`Address: ${data.address}`, 10, 50);
+          doc.text(`Address: ${data.addr}`, 10, 50);
           doc.text(`Total: ${data.total}`, 10, 60);
           doc.text("Items:", 10, 70);
           data.items.forEach((it, idx) => {
             doc.text(`- ${it}`, 12, 80 + idx * 7);
           });
-
           doc.save("manual_label.pdf");
         });
-      });
-    })();
+    });
   </script>
 </body>
 </html>
