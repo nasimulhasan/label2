@@ -1,43 +1,93 @@
-<div class="accordion mt-4" id="unlockInfoAccordion">
-  <div class="accordion-item">
-    <h2 class="accordion-header" id="headingUnlockInfo">
-      <button class="accordion-button collapsed" type="button"
-              data-bs-toggle="collapse" data-bs-target="#collapseUnlockInfo"
-              aria-expanded="false" aria-controls="collapseUnlockInfo">
-        How to get Unlock Code?
-      </button>
-    </h2>
-    <div id="collapseUnlockInfo" class="accordion-collapse collapse"
-         aria-labelledby="headingUnlockInfo" data-bs-parent="#unlockInfoAccordion">
-      <div class="accordion-body">
-        <div class="row">
-          <!-- Left column: your explanatory text -->
-          <div class="col-md-6">
-            <p>
-              To obtain an unlock code, visit our pricing page and complete the purchase form.
-              Once payment is confirmed, your code will arrive via email within minutes.
-            </p>
-            <ul>
-              <li>Step 1: Go to the pricing page</li>
-              <li>Step 2: Fill out the purchase form</li>
-              <li>Step 3: Check your email inbox</li>
-            </ul>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Shipping Label Generator</title>
+  <!-- Bootstrap CSS -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <!-- Bootstrap Icons -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
+  <!-- SheetJS -->
+  <script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
+  <!-- jsPDF -->
+  <script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
+  <!-- JSZip -->
+  <script src="https://cdn.jsdelivr.net/npm/jszip@3.10.0/dist/jszip.min.js"></script>
+  <!-- FileSaver -->
+  <script src="https://cdn.jsdelivr.net/npm/file-saver@2.0.5/dist/FileSaver.min.js"></script>
+  <style>
+    body { padding-top: 4rem; background: #f8f9fa; }
+    .hidden { display: none !important; }
+    @media (min-width: 768px) {
+      .col-md-6 { flex: 0 0 50%; max-width: 50%; }
+    }
+  </style>
+</head>
+<body>
+  <div class="container d-flex justify-content-center">
+    <div style="width:80%; max-width:800px;">
+
+      <!-- Unlock Page -->
+      <div id="unlockPage" class="card shadow-sm mb-4">
+        <div class="card-body p-4 text-center">
+          <h1 class="card-title mb-4">Enter Unlock Code</h1>
+          <input type="text" id="unlockInput" class="form-control mb-3" placeholder="Enter unlock code">
+          <button id="unlockBtn" class="btn btn-primary w-100 mb-3">Unlock</button>
+          <div id="unlockAlert"></div>
+
+          <!-- Corrected Accordion -->
+          <div class="accordion mt-4" id="unlockInfoAccordion">
+            <div class="accordion-item">
+              <h2 class="accordion-header" id="headingUnlockInfo">
+                <button
+                  class="accordion-button collapsed"
+                  type="button"
+                  data-bs-toggle="collapse"
+                  data-bs-target="#collapseUnlockInfo"
+                  aria-expanded="false"
+                  aria-controls="collapseUnlockInfo"
+                >
+                  How to get Unlock Code?
+                </button>
+              </h2>
+              <div
+                id="collapseUnlockInfo"
+                class="accordion-collapse collapse"
+                aria-labelledby="headingUnlockInfo"
+                data-bs-parent="#unlockInfoAccordion"
+              >
+                <div class="accordion-body">
+                  <div class="row">
+                    <!-- Left column: explanatory text -->
+                    <div class="col-md-6">
+                      <p>
+                        To obtain an unlock code, visit our pricing page and complete the purchase form.
+                        Once payment is confirmed, your code will arrive via email within minutes.
+                      </p>
+                      <ul>
+                        <li>Step 1: Go to the pricing page</li>
+                        <li>Step 2: Fill out the purchase form</li>
+                        <li>Step 3: Check your email inbox</li>
+                      </ul>
+                    </div>
+                    <!-- Right column: fixed-size image -->
+                    <div class="col-md-6 d-flex justify-content-center align-items-center">
+                      <img
+                        src="https://raw.githubusercontent.com/nasimulhasan/label2/main/qr.jpeg"
+                        alt="Unlock Code Example"
+                        style="max-width:100%; height:200px; object-fit:contain;"
+                      />
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
           </div>
-          <!-- Right column: fixed-size image -->
-          <div class="col-md-6 d-flex justify-content-center align-items-center">
-            <img
-              src="https://raw.githubusercontent.com/you/yourrepo/main/path/to/image.png"
-              alt="Unlock Code Example"
-              style="max-width:100%; height:200px; object-fit:contain;"
-            />
-          </div>
+          <!-- End Accordion -->
+
         </div>
       </div>
-    </div>
-  </div>
-</div>
-
-
 
       <!-- Generators (hidden until unlocked) -->
       <div id="generatorPage" class="hidden">
@@ -48,7 +98,6 @@
             <div class="card shadow-sm mb-4">
               <div class="card-body p-4">
                 <h2 class="h5 mb-3">Excel Label Generator</h2>
-                <!-- Paper size UI -->
                 <div class="mb-3 row">
                   <label class="col-sm-4 col-form-label">Paper Size</label>
                   <div class="col-sm-8">
@@ -62,8 +111,12 @@
                   </div>
                 </div>
                 <div id="customSizeFields" class="mb-3 row d-none">
-                  <div class="col-sm-4"><input type="number" id="paperWidth"  class="form-control" placeholder="Width"></div>
-                  <div class="col-sm-4"><input type="number" id="paperHeight" class="form-control" placeholder="Height"></div>
+                  <div class="col-sm-4">
+                    <input type="number" id="paperWidth" class="form-control" placeholder="Width">
+                  </div>
+                  <div class="col-sm-4">
+                    <input type="number" id="paperHeight" class="form-control" placeholder="Height">
+                  </div>
                   <div class="col-sm-4">
                     <select id="paperUnit" class="form-select">
                       <option value="mm" selected>mm</option>
@@ -72,7 +125,6 @@
                     </select>
                   </div>
                 </div>
-                <!-- File inputs -->
                 <form id="labelForm">
                   <div class="mb-2">
                     <label class="form-label">Upload Font (optional)</label>
@@ -131,8 +183,12 @@
                   </div>
                 </div>
                 <div id="manCustomSizeFields" class="mb-3 row d-none">
-                  <div class="col-sm-4"><input type="number" id="manPaperWidth" class="form-control" placeholder="Width"></div>
-                  <div class="col-sm-4"><input type="number" id="manPaperHeight" class="form-control" placeholder="Height"></div>
+                  <div class="col-sm-4">
+                    <input type="number" id="manPaperWidth" class="form-control" placeholder="Width">
+                  </div>
+                  <div class="col-sm-4">
+                    <input type="number" id="manPaperHeight" class="form-control" placeholder="Height">
+                  </div>
                   <div class="col-sm-4">
                     <select id="manPaperUnit" class="form-select">
                       <option value="mm" selected>mm</option>
@@ -142,13 +198,27 @@
                   </div>
                 </div>
                 <form id="manualForm">
-                  <div class="mb-2"><input type="text" id="manInvoice"    class="form-control" placeholder="Invoice #"></div>
-                  <div class="mb-2"><input type="text" id="manFirstName" class="form-control" placeholder="First Name"></div>
-                  <div class="mb-2"><input type="text" id="manLastName"  class="form-control" placeholder="Last Name"></div>
-                  <div class="mb-2"><input type="tel"  id="manPhone"     class="form-control" placeholder="Phone"></div>
-                  <div class="mb-2"><textarea id="manAddress" class="form-control" rows="2" placeholder="Address"></textarea></div>
-                  <div class="mb-2"><input type="number" id="manTotal"     class="form-control" placeholder="Total Amount"></div>
-                  <div class="mb-2"><textarea id="manItems"   class="form-control" rows="3" placeholder="Items (one per line)"></textarea></div>
+                  <div class="mb-2">
+                    <input type="text" id="manInvoice" class="form-control" placeholder="Invoice #">
+                  </div>
+                  <div class="mb-2">
+                    <input type="text" id="manFirstName" class="form-control" placeholder="First Name">
+                  </div>
+                  <div class="mb-2">
+                    <input type="text" id="manLastName" class="form-control" placeholder="Last Name">
+                  </div>
+                  <div class="mb-2">
+                    <input type="tel" id="manPhone" class="form-control" placeholder="Phone">
+                  </div>
+                  <div class="mb-2">
+                    <textarea id="manAddress" class="form-control" rows="2" placeholder="Address"></textarea>
+                  </div>
+                  <div class="mb-2">
+                    <input type="number" id="manTotal" class="form-control" placeholder="Total Amount">
+                  </div>
+                  <div class="mb-2">
+                    <textarea id="manItems" class="form-control" rows="3" placeholder="Items (one per line)"></textarea>
+                  </div>
                   <button type="button" id="generateManualBtn" class="btn btn-secondary w-100">
                     Generate Manual Label
                   </button>
@@ -163,7 +233,7 @@
     </div>
   </div>
 
-  <!-- **Bootstrap Bundle JS** (must come before your collapse handlers) -->
+  <!-- Bootstrap Bundle JS -->
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 
   <!-- Unlock handler -->
@@ -175,7 +245,7 @@
       return validCodes.includes(code);
     }
     document.getElementById('unlockBtn').onclick = async () => {
-      const code  = document.getElementById('unlockInput').value.trim();
+      const code = document.getElementById('unlockInput').value.trim();
       const alert = document.getElementById('unlockAlert');
       alert.innerHTML = '';
       try {
