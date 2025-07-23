@@ -265,7 +265,7 @@
         doc.addImage(headerDataUrl, 'PNG', 0, 0, 101.6, 30);
         doc.addImage(footerDataUrl, 'PNG', 0, 106.4, 101.6, 49);
 
-        const leftMargin = 10;
+        const leftMargin = 20;
         let y = 41;
         doc.text(`Invoice #: ${inv}`, leftMargin, y); y += 7;
         const name = titleCase(group[0]['First Name'] + ' ' + group[0]['Last Name']);
