@@ -15,7 +15,7 @@
 </head>
 <body>
   <div class="container d-flex justify-content-center">
-    <!-- increase width to 60% -->
+    <!-- Increase to 60% width -->
     <div style="width:60%; max-width:600px;">
 
       <!-- Unlock Page -->
@@ -27,6 +27,7 @@
           </div>
           <button id="unlockBtn" class="btn btn-primary w-100 mb-3">Unlock</button>
           <div id="unlockAlert" class="mt-3"></div>
+
           <div class="accordion mt-4" id="unlockInfoAccordion">
             <div class="accordion-item">
               <h2 class="accordion-header" id="headingUnlockInfo">
@@ -58,7 +59,7 @@
             <div class="card shadow-sm mb-4">
               <div class="card-body p-4">
                 <h2 class="h5 mb-3">Excel Label Generator</h2>
-                <!-- existing inputs... -->
+                <!-- (keep all your existing inputs here unchanged) -->
               </div>
             </div>
           </div>
@@ -68,7 +69,7 @@
             <div class="card shadow-sm mb-4">
               <div class="card-body p-4">
                 <h2 class="h5 mb-3">Manual Label Generator</h2>
-                <!-- add font, header, footer uploads -->
+                <!-- **New**: font/header/footer uploads -->
                 <div class="mb-2">
                   <label for="manFontInput" class="form-label">Upload Font (optional)</label>
                   <input type="file" id="manFontInput" class="form-control" accept=".ttf,.otf">
@@ -81,6 +82,7 @@
                   <label for="manFooterInput" class="form-label">Footer Image</label>
                   <input type="file" id="manFooterInput" class="form-control" accept="image/*">
                 </div>
+
                 <div class="mb-3 row">
                   <label class="col-sm-4 col-form-label">Paper Size</label>
                   <div class="col-sm-8">
@@ -94,8 +96,12 @@
                   </div>
                 </div>
                 <div id="manCustomSizeFields" class="mb-3 row d-none">
-                  <div class="col-sm-4"><input type="number" id="manPaperWidth" class="form-control" placeholder="Width"></div>
-                  <div class="col-sm-4"><input type="number" id="manPaperHeight" class="form-control" placeholder="Height"></div>
+                  <div class="col-sm-4">
+                    <input type="number" id="manPaperWidth" class="form-control" placeholder="Width">
+                  </div>
+                  <div class="col-sm-4">
+                    <input type="number" id="manPaperHeight" class="form-control" placeholder="Height">
+                  </div>
                   <div class="col-sm-4">
                     <select id="manPaperUnit" class="form-select">
                       <option value="mm" selected>mm</option>
@@ -104,27 +110,169 @@
                     </select>
                   </div>
                 </div>
+
                 <form id="manualForm">
-                  <div class="mb-2"><input type="text" id="manInvoice" class="form-control" placeholder="Invoice #"></div>
-                  <div class="mb-2"><input type="text" id="manFirstName" class="form-control" placeholder="First Name"></div>
-                  <div class="mb-2"><input type="text" id="manLastName" class="form-control" placeholder="Last Name"></div>
-                  <div class="mb-2"><input type="tel" id="manPhone" class="form-control" placeholder="Phone"></div>
-                  <div class="mb-2"><textarea id="manAddress" class="form-control" rows="2" placeholder="Address"></textarea></div>
-                  <div class="mb-2"><input type="number" id="manTotal" class="form-control" placeholder="Total Amount"></div>
-                  <div class="mb-2"><textarea id="manItems" class="form-control" rows="3" placeholder="Items (one per line)"></textarea></div>
-                  <button type="button" id="generateManualBtn" class="btn btn-secondary w-100">Generate Manual Label</button>
+                  <div class="mb-2">
+                    <input type="text" id="manInvoice" class="form-control" placeholder="Invoice #">
+                  </div>
+                  <div class="mb-2">
+                    <input type="text" id="manFirstName" class="form-control" placeholder="First Name">
+                  </div>
+                  <div class="mb-2">
+                    <input type="text" id="manLastName" class="form-control" placeholder="Last Name">
+                  </div>
+                  <div class="mb-2">
+                    <input type="tel" id="manPhone" class="form-control" placeholder="Phone">
+                  </div>
+                  <div class="mb-2">
+                    <textarea id="manAddress" class="form-control" rows="2" placeholder="Address"></textarea>
+                  </div>
+                  <div class="mb-2">
+                    <input type="number" id="manTotal" class="form-control" placeholder="Total Amount">
+                  </div>
+                  <div class="mb-2">
+                    <textarea id="manItems" class="form-control" rows="3" placeholder="Items (one per line)"></textarea>
+                  </div>
+                  <button type="button" id="generateManualBtn" class="btn btn-secondary w-100">
+                    Generate Manual Label
+                  </button>
                 </form>
               </div>
             </div>
           </div>
+
         </div>
       </div>
 
     </div>
   </div>
 
-  <!-- Bootstrap Bundle JS -->
+  <!-- Bootstrap Bundle JS (includes Collapse) -->
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-  <!-- scripts unchanged -->
+  <!-- Full JS to wire up Unlock, Excel ZIP, and Manual PDF -->
+  <script>
+    const { jsPDF } = window.jspdf;
+    let parsedRows = [], invoiceList = [], customFontName, customFontData;
+
+    // Helpers
+    const readURL = file => new Promise(res => {
+      const r = new FileReader(); r.onload = () => res(r.result); r.readAsDataURL(file);
+    });
+    const readBuffer = file => new Promise(res => {
+      const r = new FileReader(); r.onload = () => res(r.result); r.readAsArrayBuffer(file);
+    });
+    const titleCase = s => s.toLowerCase().split(' ').map(w=>w.charAt(0).toUpperCase()+w.slice(1)).join(' ');
+
+    // Unlock logic
+    async function checkUnlock(code) {
+      const resp = await fetch('https://raw.githubusercontent.com/nasimulhasan/testlabel/main/keys.json');
+      const { validCodes } = await resp.json();
+      return validCodes.includes(code);
+    }
+    document.getElementById('unlockBtn').addEventListener('click', async () => {
+      const input = document.getElementById('unlockInput');
+      const alertBox = document.getElementById('unlockAlert');
+      alertBox.innerHTML = '';
+      try {
+        const ok = await checkUnlock(input.value.trim());
+        alertBox.innerHTML = ok
+          ? '<div class="alert alert-success">Unlocked!</div>'
+          : '<div class="alert alert-warning">Invalid code</div>';
+        if (ok) {
+          document.getElementById('unlockPage').classList.add('hidden');
+          document.getElementById('generatorPage').classList.remove('hidden');
+        }
+      } catch {
+        alertBox.innerHTML = '<div class="alert alert-danger">Error verifying code</div>';
+      }
+    });
+
+    // Paper-size toggles
+    document.getElementById('manPresetSize').addEventListener('change', e => {
+      document.getElementById('manCustomSizeFields')
+              .classList.toggle('d-none', e.target.value !== 'custom');
+    });
+
+    // Manual font/header/footer uploads
+    document.getElementById('manFontInput').addEventListener('change', async e => {
+      const f = e.target.files[0];
+      if (!f) return;
+      const url = await readURL(f);
+      customFontName = f.name;
+      customFontData = url.split(',')[1];
+    });
+
+    // Manual PDF generation
+    document.getElementById('generateManualBtn').addEventListener('click', async () => {
+      const inv = document.getElementById('manInvoice').value.trim();
+      if (!inv) return alert('Please enter an Invoice #');
+      const group = [{
+        Invoice: inv,
+        'First Name': document.getElementById('manFirstName').value.trim(),
+        'Last Name': document.getElementById('manLastName').value.trim(),
+        Phone: document.getElementById('manPhone').value.trim(),
+        Address: document.getElementById('manAddress').value.trim(),
+        'Order Total Amount': parseFloat(document.getElementById('manTotal').value) || 0,
+        Items: document.getElementById('manItems').value.trim().split('\n')
+      }];
+
+      const headerF = document.getElementById('manHeaderInput').files[0];
+      const footerF = document.getElementById('manFooterInput').files[0];
+      if (!headerF || !footerF) return alert('Please upload both Header and Footer images');
+      const header = await readURL(headerF);
+      const footer = await readURL(footerF);
+
+      // Paper size for manual
+      let w,h,unit;
+      const ps = document.getElementById('manPresetSize').value;
+      if (ps === 'custom') {
+        w = +document.getElementById('manPaperWidth').value;
+        h = +document.getElementById('manPaperHeight').value;
+        unit = document.getElementById('manPaperUnit').value;
+        if (unit === 'in') { w *= 25.4; h *= 25.4; unit = 'mm'; }
+        if (unit === 'pt') { w *= 0.352778; h *= 0.352778; unit = 'mm'; }
+      } else {
+        [w,h,unit] = ps.split(','); w = +w; h = +h;
+      }
+
+      const doc = new jsPDF({ unit, format:[w,h] });
+      doc.setFontSize(10);
+      if (customFontName && customFontData) {
+        doc.addFileToVFS(customFontName, customFontData);
+        doc.addFont(customFontName, customFontName, 'normal');
+        doc.setFont(customFontName, 'normal');
+      }
+
+      const hp = doc.getImageProperties(header), hh = w*(hp.height/hp.width);
+      doc.addImage(header,'PNG',0,0,w,hh);
+      const fp = doc.getImageProperties(footer), fh = w*(fp.height/fp.width);
+      doc.addImage(footer,'PNG',0,h-fh,w,fh);
+
+      let y = hh + 11, left = 10, valX = left + 18;
+      doc.text('Invoice #:', left, y); doc.text(inv, valX, y); y += 7;
+      const name = titleCase(group[0]['First Name'] + ' ' + group[0]['Last Name']);
+      doc.text('Name:', left, y); doc.text(name, valX, y); y += 7;
+
+      let num = group[0].Phone.replace(/\D/g,'');
+      if (num.startsWith('880')) num = num.slice(3);
+      else if (num.startsWith('0')) num = num.slice(1);
+      if (num.length > 10) num = num.slice(-10);
+      doc.text('Phone:', left, y); doc.text(num, valX, y); y += 7;
+
+      const lines = doc.splitTextToSize(`Address: ${titleCase(group[0].Address)}`, w - left*2);
+      doc.text(lines, left, y); y += lines.length*7;
+
+      const total = String(Math.round(group[0]['Order Total Amount']));
+      doc.text('Total:', left, y); doc.text(`Tk ${total}`, valX, y); y += 7;
+
+      doc.text('Items:', left, y); y += 7;
+      group[0].Items.forEach(item => {
+        if (!item) return;
+        doc.text(`- ${item}`, left + 10, y); y += 7;
+      });
+
+      doc.save(`label_${inv}.pdf`);
+    });
+  </script>
 </body>
 </html>
