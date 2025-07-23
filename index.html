@@ -19,12 +19,19 @@
   <style>
     body { padding-top: 4rem; background: #f8f9fa; }
     .hidden { display: none !important; }
+    /* override two columns to 52% each on md+ */
+    @media (min-width: 768px) {
+      .col-md-6 {
+        flex: 0 0 52%;
+        max-width: 52%;
+      }
+    }
   </style>
 </head>
 <body>
   <div class="container d-flex justify-content-center">
     <!-- 60% width container -->
-    <div style="width:80%; max-width:600px;">
+    <div style="width:60%; max-width:600px;">
 
       <!-- Unlock Page -->
       <div id="unlockPage" class="card shadow-sm mb-4">
@@ -45,10 +52,7 @@
               <div id="collapseUnlockInfo" class="accordion-collapse collapse"
                    aria-labelledby="headingUnlockInfo" data-bs-parent="#unlockInfoAccordion">
                 <div class="accordion-body text-start">
-                  <p>
-                    To obtain an unlock code, please visit our pricing page and complete the purchase form.
-                    Once payment is confirmed, your code will be emailed to you within minutes.
-                  </p>
+                  <p>To obtain an unlock code, please visit our pricing page and complete the purchase form. Once payment is confirmed, your code will be emailed to you within minutes.</p>
                 </div>
               </div>
             </div>
@@ -60,10 +64,11 @@
       <div id="generatorPage" class="hidden">
         <div class="row gx-4">
           <!-- Excel Label Generator -->
-          <div class="col-md-7">
+          <div class="col-md-6">
             <div class="card shadow-sm mb-4">
               <div class="card-body p-4">
                 <h2 class="h5 mb-3">Excel Label Generator</h2>
+
                 <!-- Paper Size -->
                 <div class="mb-3 row">
                   <label class="col-sm-4 col-form-label">Paper Size</label>
@@ -88,13 +93,27 @@
                     </select>
                   </div>
                 </div>
+
                 <form id="labelForm">
-                  <div class="mb-2"><input type="file" id="fontInput"  class="form-control" accept=".ttf,.otf"></div>
-                  <div class="mb-2"><input type="file" id="headerInput" class="form-control" accept="image/*"></div>
-                  <div class="mb-2"><input type="file" id="footerInput" class="form-control" accept="image/*"></div>
-                  <div class="mb-2"><input type="file" id="excelInput" class="form-control" accept=".xls,.xlsx"></div>
+                  <div class="mb-2">
+                    <label for="fontInput" class="form-label">Upload Font (optional)</label>
+                    <input type="file" id="fontInput" class="form-control" accept=".ttf,.otf">
+                  </div>
+                  <div class="mb-2">
+                    <label for="headerInput" class="form-label">Header Image</label>
+                    <input type="file" id="headerInput" class="form-control" accept="image/*">
+                  </div>
+                  <div class="mb-2">
+                    <label for="footerInput" class="form-label">Footer Image</label>
+                    <input type="file" id="footerInput" class="form-control" accept="image/*">
+                  </div>
+                  <div class="mb-2">
+                    <label for="excelInput" class="form-label">Excel File</label>
+                    <input type="file" id="excelInput" class="form-control" accept=".xls,.xlsx">
+                  </div>
                   <div id="invoiceSelection" class="mb-2 hidden">
-                    <select id="invoiceSelect" class="form-select" multiple size="8"></select>
+                    <label for="invoiceSelect" class="form-label">Select Invoices</label>
+                    <select id="invoiceSelect" class="form-select" multiple size="8" placeholder="Select invoices"></select>
                   </div>
                   <button type="button" id="generateBtn" class="btn btn-primary w-100">Generate Labels</button>
                 </form>
@@ -104,24 +123,23 @@
           </div>
 
           <!-- Manual Label Generator -->
-          <div class="col-md-7">
+          <div class="col-md-6">
             <div class="card shadow-sm mb-4">
               <div class="card-body p-4">
                 <h2 class="h5 mb-3">Manual Label Generator</h2>
-                <!-- Font + Header/Footer Upload -->
                 <div class="mb-2">
-                  <label class="form-label">Upload Font (optional)</label>
+                  <label for="manFontInput" class="form-label">Upload Font (optional)</label>
                   <input type="file" id="manFontInput" class="form-control" accept=".ttf,.otf">
                 </div>
                 <div class="mb-2">
-                  <label class="form-label">Header Image</label>
+                  <label for="manHeaderInput" class="form-label">Header Image</label>
                   <input type="file" id="manHeaderInput" class="form-control" accept="image/*">
                 </div>
                 <div class="mb-2">
-                  <label class="form-label">Footer Image</label>
+                  <label for="manFooterInput" class="form-label">Footer Image</label>
                   <input type="file" id="manFooterInput" class="form-control" accept="image/*">
                 </div>
-                <!-- Paper Size -->
+
                 <div class="mb-3 row">
                   <label class="col-sm-4 col-form-label">Paper Size</label>
                   <div class="col-sm-8">
@@ -145,23 +163,22 @@
                     </select>
                   </div>
                 </div>
+
                 <form id="manualForm">
-                  <div class="mb-2"><input type="text"     id="manInvoice"   class="form-control" placeholder="Invoice #"></div>
-                  <div class="mb-2"><input type="text"     id="manFirstName" class="form-control" placeholder="First Name"></div>
-                  <div class="mb-2"><input type="text"     id="manLastName"  class="form-control" placeholder="Last Name"></div>
-                  <div class="mb-2"><input type="tel"      id="manPhone"     class="form-control" placeholder="Phone"></div>
-                  <div class="mb-2"><textarea id="manAddress"  class="form-control" rows="2" placeholder="Address"></textarea></div>
-                  <div class="mb-2"><input type="number"  id="manTotal"     class="form-control" placeholder="Total Amount"></div>
-                  <div class="mb-2"><textarea id="manItems"    class="form-control" rows="3" placeholder="Items (one per line)"></textarea></div>
-                  <button type="button" id="generateManualBtn" class="btn btn-secondary w-100">
-                    Generate Manual Label
-                  </button>
+                  <div class="mb-2"><input type="text" id="manInvoice" class="form-control" placeholder="Invoice #"></div>
+                  <div class="mb-2"><input type="text" id="manFirstName" class="form-control" placeholder="First Name"></div>
+                  <div class="mb-2"><input type="text" id="manLastName" class="form-control" placeholder="Last Name"></div>
+                  <div class="mb-2"><input type="tel" id="manPhone" class="form-control" placeholder="Phone"></div>
+                  <div class="mb-2"><textarea id="manAddress" class="form-control" rows="2" placeholder="Address"></textarea></div>
+                  <div class="mb-2"><input type="number" id="manTotal" class="form-control" placeholder="Total Amount"></div>
+                  <div class="mb-2"><textarea id="manItems" class="form-control" rows="3" placeholder="Items (one per line)"></textarea></div>
+                  <button type="button" id="generateManualBtn" class="btn btn-secondary w-100">Generate Manual Label</button>
                 </form>
               </div>
             </div>
           </div>
-        </div> <!-- /.row -->
-      </div>   <!-- /#generatorPage -->
+        </div>
+      </div>
 
     </div>
   </div>
@@ -172,11 +189,10 @@
     const { jsPDF } = window.jspdf;
     let parsedRows = [], invoiceList = [], customFontName, customFontData;
 
-    const readURL = file => new Promise(r => { const fr = new FileReader(); fr.onload = ()=>r(fr.result); fr.readAsDataURL(file); });
-    const readBuffer = file => new Promise(r => { const fr = new FileReader(); fr.onload = ()=>r(fr.result); fr.readAsArrayBuffer(file); });
+    const readURL = file => new Promise(r => { const fr=new FileReader(); fr.onload=()=>r(fr.result); fr.readAsDataURL(file); });
+    const readBuffer = file => new Promise(r => { const fr=new FileReader(); fr.onload=()=>r(fr.result); fr.readAsArrayBuffer(file); });
     const titleCase = s => s.toLowerCase().split(' ').map(w=>w.charAt(0).toUpperCase()+w.slice(1)).join(' ');
 
-    // Unlock
     async function checkUnlock(code){
       const resp = await fetch('https://raw.githubusercontent.com/nasimulhasan/testlabel/main/keys.json');
       if(!resp.ok) throw new Error();
@@ -191,92 +207,62 @@
           a.innerHTML='<div class="alert alert-success">Unlocked!</div>';
           document.getElementById('unlockPage').classList.add('hidden');
           document.getElementById('generatorPage').classList.remove('hidden');
-        } else {
-          a.innerHTML='<div class="alert alert-warning">Invalid code</div>';
-        }
-      }catch{
-        a.innerHTML='<div class="alert alert-danger">Error verifying code</div>';
-      }
-    };
+        } else a.innerHTML='<div class="alert alert-warning">Invalid code</div>';
+      }catch{ a.innerHTML='<div class="alert alert-danger">Error verifying code</div>';}    };
 
-    // Paper‑size toggles
-    document.getElementById('presetSize').addEventListener('change', e=>
-      document.getElementById('customSizeFields').classList.toggle('d-none', e.target.value!=='custom')
+    document.getElementById('presetSize').addEventListener('change',e=>
+      document.getElementById('customSizeFields').classList.toggle('d-none',e.target.value!=='custom')
     );
-    document.getElementById('manPresetSize').addEventListener('change', e=>
-      document.getElementById('manCustomSizeFields').classList.toggle('d-none', e.target.value!=='custom')
+    document.getElementById('manPresetSize').addEventListener('change',e=>
+      document.getElementById('manCustomSizeFields').classList.toggle('d-none',e.target.value!=='custom')
     );
 
-    // Font/header/footer for Manual
-    document.getElementById('manFontInput').addEventListener('change', async e=>{
-      const f=e.target.files[0]; if(!f) return;
-      const url=await readURL(f);
+    document.getElementById('manFontInput').addEventListener('change',async e=>{
+      const f=e.target.files[0]; if(!f)return; const url=await readURL(f);
       customFontName=f.name; customFontData=url.split(',')[1];
     });
 
-    // Excel generator wiring left as before...
-    // Manual generator:
-    document.getElementById('generateManualBtn').onclick = async ()=>{
-      const inv = document.getElementById('manInvoice').value.trim();
-      if(!inv) return alert('Enter Invoice #');
-      const group=[{
-        'Invoice': inv,
-        'First Name': document.getElementById('manFirstName').value.trim(),
-        'Last Name': document.getElementById('manLastName').value.trim(),
-        'Phone': document.getElementById('manPhone').value.trim(),
-        'Address': document.getElementById('manAddress').value.trim(),
-        'Order Total Amount': parseFloat(document.getElementById('manTotal').value)||0,
-        'Items': document.getElementById('manItems').value.trim().split('\\n')
-      }];
-      // Header/footer
-      const hF = document.getElementById('manHeaderInput').files[0];
-      const fF = document.getElementById('manFooterInput').files[0];
-      if(!hF||!fF) return alert('Upload header & footer');
-      const header = await readURL(hF), footer = await readURL(fF);
+    // Excel generator wiring omitted for brevity
 
-      // Paper size
-      let w,h,unit;
-      const ps = document.getElementById('manPresetSize').value;
-      if(ps==='custom'){
-        w=+document.getElementById('manPaperWidth').value;
+    document.getElementById('generateManualBtn').onclick = async ()=>{
+      const inv=document.getElementById('manInvoice').value.trim();
+      if(!inv)return alert('Enter Invoice #');
+      const group=[{Invoice:inv,'First Name':document.getElementById('manFirstName').value.trim(),
+        'Last Name':document.getElementById('manLastName').value.trim(),
+        Phone:document.getElementById('manPhone').value.trim(),
+        Address:document.getElementById('manAddress').value.trim(),
+        'Order Total Amount':parseFloat(document.getElementById('manTotal').value)||0,
+        Items:document.getElementById('manItems').value.trim().split('\n')}];
+      const hF=document.getElementById('manHeaderInput').files[0];
+      const fF=document.getElementById('manFooterInput').files[0];
+      if(!hF||!fF)return alert('Upload header & footer');
+      const header=await readURL(hF),footer=await readURL(fF);
+      let w,h,unit; const ps=document.getElementById('manPresetSize').value;
+      if(ps==='custom'){w=+document.getElementById('manPaperWidth').value;
         h=+document.getElementById('manPaperHeight').value;
         unit=document.getElementById('manPaperUnit').value;
         if(unit==='in'){w*=25.4;h*=25.4;unit='mm';}
-        if(unit==='pt'){w*=0.352778;h*=0.352778;unit='mm';}
-      } else {
-        [w,h,unit]=ps.split(',');w=+w;h=+h;
-      }
-
-      const doc = new jsPDF({unit,format:[w,h]});
-      doc.setFontSize(10);
-      if(customFontName&&customFontData){
-        doc.addFileToVFS(customFontName,customFontData);
-        doc.addFont(customFontName,customFontName,'normal');
-        doc.setFont(customFontName,'normal');
-      }
-      const hp=doc.getImageProperties(header), hh=w*(hp.height/hp.width);
+        if(unit==='pt'){w*=0.352778;h*=0.352778;unit='mm';}}
+      else {[w,h,unit]=ps.split(',');w=+w;h=+h;}
+      const doc=new jsPDF({unit,format:[w,h]});doc.setFontSize(10);
+      if(customFontName&&customFontData){doc.addFileToVFS(customFontName,customFontData);
+        doc.addFont(customFontName,customFontName,'normal');doc.setFont(customFontName,'normal');}
+      const hp=doc.getImageProperties(header),hh=w*(hp.height/hp.width);
       doc.addImage(header,'PNG',0,0,w,hh);
-      const fp=doc.getImageProperties(footer), fh=w*(fp.height/fp.width);
+      const fp=doc.getImageProperties(footer),fh=w*(fp.height/fp.width);
       doc.addImage(footer,'PNG',0,h-fh,w,fh);
-
       let y=hh+11,left=10,valX=left+18;
       doc.text('Invoice #:',left,y);doc.text(inv,valX,y);y+=7;
-      const nm = titleCase(group[0]['First Name']+' '+group[0]['Last Name']);
+      const nm=titleCase(group[0]['First Name']+' '+group[0]['Last Name']);
       doc.text('Name:',left,y);doc.text(nm,valX,y);y+=7;
-      let num = group[0].Phone.replace(/\D/g,'');
-      if(num.startsWith('880')) num=num.slice(3);
-      else if(num.startsWith('0')) num=num.slice(1);
-      if(num.length>10) num=num.slice(-10);
+      let num=group[0].Phone.replace(/\D/g,'');if(num.startsWith('880'))num=num.slice(3);
+      else if(num.startsWith('0'))num=num.slice(1);if(num.length>10)num=num.slice(-10);
       doc.text('Phone:',left,y);doc.text(num,valX,y);y+=7;
       const lines=doc.splitTextToSize(`Address: ${titleCase(group[0].Address)}`,w-left*2);
       doc.text(lines,left,y);y+=lines.length*7;
       const tot=String(Math.round(group[0]['Order Total Amount']));
       doc.text('Total:',left,y);doc.text(`Tk ${tot}`,valX,y);y+=7;
-      doc.text('Items:',left,y);y+=7;
-      group[0].Items.forEach(it=>{
-        if(!it) return;
-        doc.text(`- ${it}`,left+10,y);y+=7;
-      });
+      doc.text('Items:',left,y);y+=7;group[0].Items.forEach(it=>{if(!it)return;doc.text(`- ${it}`,left+10,y);y+=7;});
       doc.save(`label_${inv}.pdf`);
     };
   </script>
